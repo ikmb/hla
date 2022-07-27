@@ -10,5 +10,5 @@ ENV PYTHONPATH /opt/hisat-genotype/hisatgenotype_modules:$PYTHONPATH
 RUN apt-get -y update && apt-get -y install make wget git g++
 
 RUN cd /opt && git clone --recurse-submodules https://github.com/DaehwanKimLab/hisat-genotype \
-	cd hisat-genotype/hisat2 && make -j2
+	&& cd hisat-genotype/hisat2 && make -j2
 
