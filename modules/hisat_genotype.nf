@@ -14,6 +14,6 @@ process HISAT_GENOTYPE {
 	script:
 
 	"""
-		hisatgenotype --index_dir ${params.hisat_genome_index} --base hla --locus-list A,B,C,DRB1,DQA1 -1 $left -2 $right 
+		hisatgenotype --index_dir ${params.hisat_genome_index} --base hla -p ${task.cpus} --locus-list A,B,C,DRB1,DQA1 -1 $left -2 $right 
 	"""
 }

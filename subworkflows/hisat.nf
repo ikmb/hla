@@ -1,13 +1,13 @@
 include { HISAT_GENOTYPE } from "./../modules/hisat_genotype"
 
-workflow HISAT {
+workflow HISAT_TYPING {
 
 	take:
 		reads
 
 	
 	main:
-		HISAT_GENOTYOPE(
+		HISAT_GENOTYPE(
 			reads
 		)
 
