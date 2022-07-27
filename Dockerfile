@@ -1,9 +1,14 @@
 FROM nfcore/base
 LABEL authors="Marc Hoeppner" \
-      description="Docker image containing all requirements for THIS pipeline"
+      description="Docker image containing all requirements for HLA pipeline"
 
 COPY environment.yml /
 RUN conda env create -f /environment.yml && conda clean -a
-ENV PATH /opt/conda/envs/PIPELINE-VERSION/bin:$PATH
+ENV PATH /opt/conda/envs/PIPELINE-VERSION/bin:/opt/hisat-genotype:/opt/hisat-genotype/hisat2:$PATH
+ENV PYTHONPATH /opt/hisat-genotype/hisatgenotype_modules:$PYTHONPATH
 
-RUN apt-get -y update && apt-get -y install make wget
+RUN apt-get -y update && apt-get -y install make wget git python-3.6 samtools g++
+
+RUN cd /opt && git clone --recurse-submodules https://github.com/DaehwanKimLab/hisat-genotype \
+	cd hisat-genotype/hisat2 && make -j2
+

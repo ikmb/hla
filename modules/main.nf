@@ -1,4 +1,4 @@
-process FASTP {
+process TRIM {
 
         input:
 	tuple val(meta), path(fastqR1), path(fastqR2)
