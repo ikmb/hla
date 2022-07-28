@@ -12,6 +12,6 @@ RUN apt-get -y update && apt-get -y install make wget git g++ ruby ruby-dev
 RUN cd /opt && git clone --recurse-submodules https://github.com/DaehwanKimLab/hisat-genotype \
 	&& cd hisat-genotype/hisat2 && make -j2
 
-gem install json
-gem install prawn
+RUN gem install json
+RUN gem install prawn
 
