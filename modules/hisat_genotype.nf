@@ -4,7 +4,6 @@ process HISAT_GENOTYPE {
 
 	publishDir "${params.outdir}/${meta.patient_id}|${meta.sample_id}", mode: 'copy'
 
-
 	input:
 	tuple val(meta),path(left),path(right)
 

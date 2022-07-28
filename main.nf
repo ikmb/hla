@@ -30,9 +30,13 @@ params.dict = file(params.genomes[ "hg38" ].dict, checkIfExists: true)
 
 include { HLA } from './workflows/hla'
 
+multiqc_report = Channel.from([])
+
 workflow {
 
 	HLA()
+
+	multiqc_report = multiqc_report.mix(HLA.out.qc)
 
 }
 

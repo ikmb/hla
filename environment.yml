@@ -9,4 +9,4 @@ dependencies:
   - bioconda::fastp=0.23.1
   - python=3.9
   - bioconda::samtools=1.13
-  
+  - bioconda::bwa=0.7.17  

@@ -10,14 +10,14 @@ process XHLA {
 	tuple val(meta),path(bam),path(bai)
 
 	output:
-	tuple val(meta),path("${results}/*.json"), emit: results
+	tuple val(meta),path("report/*.json"), emit: results
 
 	script:
-	results = "${meta.patient_id}_${meta.sample_id}_xHLA"
+	sample_id = "${meta.patient_id}_${meta.sample_id}"
 
 	script:
 
 	"""
-		run.py --sample_id ${meta.sample_id} --input_bam $bam --output_path $results --delete
+		run.py --sample_id $sample_id --input_bam $bam --output_path report --delete
 	"""
 }

@@ -5,7 +5,6 @@ workflow HISAT_TYPING {
 	take:
 		reads
 
-	
 	main:
 		HISAT_GENOTYPE(
 			reads
