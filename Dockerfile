@@ -14,4 +14,4 @@ RUN cd /opt && git clone --recurse-submodules https://github.com/DaehwanKimLab/h
 
 RUN gem install json
 RUN gem install prawn
-
+RUN gem install prawn-table
