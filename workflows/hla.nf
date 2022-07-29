@@ -4,6 +4,7 @@ include { XHLA_TYPING } from '../subworkflows/xhla'
 include { HISAT_TYPING } from '../subworkflows/hisat'
 include { SOFTWARE_VERSIONS } from '../modules/software_versions'
 include { MULTIQC } from '../modules/multiqc'
+include { OPTITYPE } from '../subworkflows/optitype'
 
 // Input options
 samplesheet = Channel.fromPath(params.samples)
@@ -35,6 +36,12 @@ workflow HLA {
 	if ('xhla' in tools) {
 		XHLA_TYPING(
 			TRIM_AND_ALIGN.out.bam
+		)
+	}
+
+	if ('optitype' in tools) {
+		OPTITYPE(
+			TRIM_AND_ALIGN.out.reads
 		)
 	}
 	
