@@ -4,7 +4,7 @@ process HISAT_REPORT {
 	tuple val(meta),path(result)
 
 	output:
-	tuple val(meta),path(report)
+	tuple val(meta),path(report), emit: tsv
 
 	script:
 

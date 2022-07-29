@@ -1,4 +1,6 @@
-include { HISAT_GENOTYPE } from "./../modules/hisat_genotype"
+include { HISAT_GENOTYPE } from "./../modules/hisat/genotype"
+include { HISAT_REPORT } from "./../modules/hisat/report"
+
 
 workflow HISAT_TYPING {
 
@@ -9,8 +11,13 @@ workflow HISAT_TYPING {
 		HISAT_GENOTYPE(
 			reads
 		)
+	
+		HISAT_REPORT(
+			HISAT_GENOTYPE.out.results
+		)
 
 	emit:
-	hisat = HISAT_GENOTYPE.out.genotypes
+	results = HISAT_GENOTYPE.out.results
+	tsv = HISAT_REPORT.out.tsv
 
 }
