@@ -5,6 +5,7 @@ include { HISAT_TYPING } from '../subworkflows/hisat'
 include { SOFTWARE_VERSIONS } from '../modules/software_versions'
 include { MULTIQC } from '../modules/multiqc'
 include { OPTITYPE } from '../subworkflows/optitype'
+include { REPORT } from '../modules/reporting'
 
 // Input options
 samplesheet = Channel.fromPath(params.samples)
@@ -13,6 +14,7 @@ tools = params.tools ? params.tools.split(',').collect{it.trim().toLowerCase().r
 
 ch_versions = Channel.from([])
 ch_qc = Channel.from([])
+ch_reports = Channel.from([])
 
 // Workflow
 workflow HLA {
@@ -31,20 +33,27 @@ workflow HLA {
 		HISAT_TYPING(
 			TRIM_AND_ALIGN.out.reads
 		)
+		ch_reports = ch_reports.mix(HISAT_TYPING.out.report)
 	}
 
 	if ('xhla' in tools) {
 		XHLA_TYPING(
 			TRIM_AND_ALIGN.out.bam
 		)
+		ch_reports = ch_reports.mix(XHLA_TYPING.out.report)
 	}
 
 	if ('optitype' in tools) {
 		OPTITYPE(
 			TRIM_AND_ALIGN.out.reads
 		)
+		ch_reports = ch_reports.mix(OPTITYPE.out.report)
 	}
 	
+	REPORT(
+		ch_reports.groupTuple()
+	)
+
 	SOFTWARE_VERSIONS(
 		ch_versions.collect()
 	)		

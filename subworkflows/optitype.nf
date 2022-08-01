@@ -1,5 +1,5 @@
 include { OPTITYPE_FILTER } from './../modules/optitype/filter'
-include { OPTITYPE } from './../modules/optitype/optitype'
+include { OPTITYPE_RUN } from './../modules/optitype/optitype'
 
 workflow OPTITYPE {
 
@@ -10,8 +10,10 @@ workflow OPTITYPE {
 	OPTITYPE_FILTER(
 		reads
 	)
-	OPTITYPE(
+	OPTITYPE_RUN(
 		OPTITYPE_FILTER.out.reads
 	)
 	
+	emit:
+	report = OPTITYPE_RUN.out.tsv	
 }

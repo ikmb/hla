@@ -33,7 +33,6 @@ options = OpenStruct.new()
 opts = OptionParser.new()
 opts.banner = "A script description here"
 opts.separator ""
-opts.on("-x","--xhla", "=XHLA","xHLA Input file") {|argument| options.xhla = argument }
 opts.on("-s","--sample", "=SAMPLE","Sample name") {|argument| options.sample = argument }
 opts.on("-v","--version", "=VERSION","PipelineVersion") {|argument| options.version = argument }
 opts.on("-o","--outfile", "=OUTFILE","Output file") {|argument| options.outfile = argument }
@@ -46,27 +45,61 @@ opts.parse!
 
 sample = options.sample
 
-alleles =  { "A" => { "xHLA" => [], "Hisat" => [] }, 
-	"B" => { "xHLA" => [], "Hisat" => [] },
-	"C" => { "xHLA" => [], "Hisat" => [] },
-	"DPB1" => { "xHLA" => [], "Hisat" => [] },
-	"DQB1" => { "xHLA" => [], "Hisat" => [] },
-	"DRB1" => { "xHLA" => [], "Hisat" => [] },
-	"DQA1" => { "xHLA" => [], "Hisat" => [] }
+alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  }, 
+	"B" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
+	"C" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
+	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
+	"DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
+	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
+	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  }
 }
+
+files = Dir["*"]
+xhla = files.find{|f| f.upcase.include?("XHLA") }
+hisat = files.find{|f| f.upcase.include?("HISAT") }
+optitype = files.find{|f| f.upcase.include?("OPTI") }
+
 ########################
 ### xHLA data processing
 ########################
 
-json = JSON.parse( IO.readlines(options.xhla).join )
+if xhla
 
-#sample = json["sample_id"]
-this_alleles = json["hla"]["alleles"]
+	json = JSON.parse( IO.readlines(xhla).join )
 
-alleles.keys.each do |k|
+	this_alleles = json["hla"]["alleles"]
 
-	alleles[k]["xHLA"] << this_alleles.select {|al| al.match(/^#{k}.*/) }
+	alleles.keys.each do |k|
+
+		alleles[k]["xHLA"] << this_alleles.select {|al| al.match(/^#{k}.*/) }
+	end
 end
+
+############################
+### Optitype data processing
+############################
+
+if optitype
+
+	lines = IO.readlines(optitype)[0..1]
+	header = lines.shift.strip.split(/\t/)
+
+	# 0       A*26:01 A*30:01 B*13:02 B*38:01 C*06:02 C*12:03 4526.0  4281.585999999999
+
+	e = lines.shift.strip.split(/\t/)
+
+	header.each_with_index do |h,i|
+		if h.match(/^A.*/)
+			alleles["A"]["Optitype"] << e[i+1]
+		elsif h.match(/^B.*/)
+			alleles["B"]["Optitype"] << e[i+1]
+		elsif h.match(/^C.*/)
+			alleles["C"]["Optitype"] << e[i+1]
+		end
+	end
+
+end
+	
 
 # -------------------------------------------
 # PDF Generation
@@ -95,9 +128,9 @@ pdf.move_down 20
 
 # Table content
 results = []
-results << [ "Allele", "xHLA (Nicht-kommerziell)", "Hisat" ]
+results << [ "Allele", "xHLA (Nicht-kommerziell)", "Hisat", "Optitype" ]
 alleles.keys.each do |k|
-	results << [ k, alleles[k]["xHLA"].join(", "), "" ]
+	results << [ k, alleles[k]["xHLA"].join(", "), "", alleles[k]["Optitype"].join(", ") ]
 end
 
 t = pdf.make_table( 

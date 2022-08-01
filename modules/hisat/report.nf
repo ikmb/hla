@@ -8,7 +8,7 @@ process HISAT_REPORT {
 
 	script:
 
-	report = "${meta.patient_id}_${meta.sample_id}_hisat.tsv"
+	report = "${meta.patient_id}_${meta.sample_id}.hisat.tsv"
 
 	"""
 		hisatgenotype_toolkit parse-results --csv --in-dir $result > $report

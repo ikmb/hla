@@ -18,6 +18,6 @@ workflow HISAT_TYPING {
 
 	emit:
 	results = HISAT_GENOTYPE.out.results
-	tsv = HISAT_REPORT.out.tsv
+	report = HISAT_REPORT.out.tsv
 
 }

@@ -1,5 +1,7 @@
 process OPTITYPE_FILTER {
 
+	tag "${meta.patient_id}|${meta.sample_id}"
+
 	label 'optitype'
 
 	scratch true

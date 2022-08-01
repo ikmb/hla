@@ -11,5 +11,7 @@ workflow XHLA_TYPING {
 		bam
 	)
 	
+	emit:
+	report = XHLA.out.results
 	
 }
