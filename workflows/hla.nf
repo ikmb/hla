@@ -7,8 +7,56 @@ include { MULTIQC } from '../modules/multiqc'
 include { OPTITYPE } from '../subworkflows/optitype'
 include { REPORT } from '../modules/reporting'
 
+// Helper function for the sample sheet parsing to produce sane channel elements
+def returnFile(it) {
+    // Return file if it exists
+    inputFile = file(it)
+    if (!file(inputFile).exists()) exit 1, "Missing file in TSV file: ${inputFile}, see --help for more information"
+    return inputFile
+}
+
 // Input options
-samplesheet = Channel.fromPath(params.samples)
+if (params.samples) {
+        Channel.from(file(params.samples, checkIfExists: true))
+        .splitCsv(sep: ';', header: true)
+        .map { row ->
+			def meta = [:]
+                        meta.patient_id = row.patientID
+                        meta.sample_id = row.sampleID
+			meta.library_id = row.libraryID
+                        meta.readgroup_id = row.rgID
+                        left = returnFile( row.R1 )
+                        right = returnFile( row.R2)
+                        [ meta, left, right ]
+                }
+       .set {  reads_fastp }
+} else if (params.folder) {
+        Channel.fromFilePairs(params.folder + "/*_L0*_R{1,2}_001.fastq.gz", flat: true)
+        .ifEmpty { exit 1, "Did not find any reads matching your input pattern..." }
+        .map { triple ->
+		def meta = [:]
+                meta.patient_id = triple[0].split("_")[0]
+                meta.sample_id = triple[0].split("_")[1..-1].join("_").split("_L0")[0]
+		meta.readgroup_id = triple[0].split("_L0")[0]
+		meta.library_id = triple[0].split("_")[1..-1].join("_").split("_L0")[0]
+                tuple( meta,triple[1],triple[2])
+        }
+        .set { reads_fastp }
+} else if (params.reads) {
+        Channel.fromFilePairs(params.reads, flat: true)
+        .ifEmpty { exit 1, "Did not find any reads matching your input pattern..." }
+        .map { triple ->
+
+		def meta = [:]
+                meta.patient_id = triple[0].split("_")[0]
+                meta.sample_id = triple[0].split("_")[1..-1].join("_").split("_L0")[0]
+                meta.readgroup_id = triple[0].split("_L0")[0]
+                meta.library_id = triple[0].split("_")[1..-1].join("_").split("_L0")[0]
+                tuple( meta,triple[1],triple[2])
+                
+        }
+        .set { reads_fastp }
+}
 
 tools = params.tools ? params.tools.split(',').collect{it.trim().toLowerCase().replaceAll('-', '').replaceAll('_', '')} : []
 
@@ -20,11 +68,10 @@ ch_reports = Channel.from([])
 workflow HLA {
 
 	main:
-	INPUT_CHECK(samplesheet)
 
 	// Align reads to chromosome 6
 	TRIM_AND_ALIGN(
-		INPUT_CHECK.out.reads
+		reads_fastp
 	)
 	//ch_versions = FASTP.out.version
 	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.qc)
