@@ -110,18 +110,29 @@ if hisat
 	# 1 ranked B*35:08:01 (abundance: 50.20%) 
 
 	lines = IO.readlines(hisat)
+	header = lines.shift.split("\t")
 
-	lines.each do |l|
+	info = lines.shift.split("\t")
 
-		if line.include?("1 ranked") or line.include?("2 ranked")
 
-			hla_call = line.strip.split(" ")[2]
-			hla_gene = hla_call.split("*")[0]
-			
-			next unless alleles.has_key?(hla_gene)
-
-			alleles[hla_gene]["Hisat"] << hla_gene
+	header.each_with_index do |h,i|
+		if h.include?("EM: A")
+			tmp = info[i]
+			tmp.split(",").each do |t|
+				alleles["A"]["Hisat"] << t.split(" ")[0]
+			end
+		elsif h.include?("EM: B")
+			tmp = info[i]
+                        tmp.split(",").each do |t|
+                                alleles["B"]["Hisat"] << t.split(" ")[0]
+                        end
+		elsif h.include?("EM: C")
+			tmp = info[i]
+                        tmp.split(",").each do |t|
+                                alleles["C"]["Hisat"] << t.split(" ")[0]
+                        end
 		end
+
 	end
 
 end
@@ -156,7 +167,7 @@ pdf.move_down 20
 results = []
 results << [ "Allele", "xHLA (Nicht-kommerziell)", "Hisat", "Optitype" ]
 alleles.keys.each do |k|
-	results << [ k, alleles[k]["xHLA"].join(", "), "", alleles[k]["Optitype"].join(", ") ]
+	results << [ k, alleles[k]["xHLA"].sort.join(", "), alleles[k]["Hisat"].sort.join(", "), alleles[k]["Optitype"].sort.join(", ") ]
 end
 
 t = pdf.make_table( 

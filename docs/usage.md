@@ -23,7 +23,7 @@ patientID;sampleID;libraryID;rgID;R1;R2
 PatientA;Sample1;22Oct21_S3;C41232CXX.1.22Oct21_S3;/path/to/R1.fastq.gz;/path/to/R2.fastq.gz
 ```
 
-This is the preffered input option as it provide more control over the naming and grouping of the data. 
+This is the preferred input option as it provide more control over the naming and grouping of the data. 
 
 A simple ruby script is included with this pipeline to produce this file from a folder of FastQ files. However, please check 
 the output to make sure that it correctly recognized the file names etc.
@@ -65,7 +65,7 @@ nextflow run ikmb/hla --samples Samples.csv --tools 'hisat,xhla,optitype'
 Supported tools:
 
 * [xHLA](https://github.com/humanlongevity/HLA) (xhla)
-* [Hisat-genotype](https://daehwankimlab.github.io/hisat-genotype/) (hisat)
+* [Hisat-genotype](https://daehwankimlab.github.io/hisat-genotype/) (hisat)   SLOW!!
 * [Optitype](https://github.com/FRED-2/OptiType) (optitype)
 
 ### `--run_name`

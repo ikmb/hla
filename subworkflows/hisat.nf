@@ -1,6 +1,6 @@
 include { HISAT_GENOTYPE } from "./../modules/hisat/genotype"
 include { HISAT_REPORT } from "./../modules/hisat/report"
-
+include { FASTQ_MERGE } from "./../modules/fastq_merge"
 
 workflow HISAT_TYPING {
 

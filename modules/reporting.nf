@@ -1,5 +1,7 @@
 process REPORT {
 
+	tag "${meta.patient_id}|${meta.sample_id}"
+
 	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}", mode: 'copy'
 
 	input:
