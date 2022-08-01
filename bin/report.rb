@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 # == NAME
 # script_skeleton.rb
 #
@@ -101,6 +101,32 @@ if optitype
 end
 	
 
+#############################
+#### Hisat Genotype
+#############################
+
+if hisat
+
+	# 1 ranked B*35:08:01 (abundance: 50.20%) 
+
+	lines = IO.readlines(hisat)
+
+	lines.each do |l|
+
+		if line.include?("1 ranked") or line.include?("2 ranked")
+
+			hla_call = line.strip.split(" ")[2]
+			hla_gene = hla_call.split("*")[0]
+			
+			next unless alleles.has_key?(hla_gene)
+
+			alleles[hla_gene]["Hisat"] << hla_gene
+		end
+	end
+
+end
+
+			
 # -------------------------------------------
 # PDF Generation
 # -------------------------------------------

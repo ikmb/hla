@@ -12,9 +12,11 @@ nextflow run ikmb/hla --samples Samples.csv --tools 'xhla,hisat,optitype' -profi
 
 ## Options
 
-### `--samples`
+### Input(s)
 
-The pipeline expects a CSV-formatted samplesheet as input. The format should look as follows:
+#### `--samples`
+
+This pipeline accepts input data in CSV format. The format should look as follows:
 
 ```
 patientID;sampleID;libraryID;rgID;R1;R2
@@ -28,6 +30,28 @@ the output to make sure that it correctly recognized the file names etc.
 ruby samplesheet_from_folder.rb -f /path/to/data
 ```
 
+This can then used as input like so:
+
+```
+nextflow run ikmb/hla --samples Samples.csv
+```
+
+#### `--folder`
+
+Input folder containing paired-end fastQ files.
+
+```
+nextflow run ikmb/hla --folder '/path/to/folder'
+```
+
+#### `--reads`
+
+A regular expression pointing to a set of paired-end fastQ files. 
+
+```
+nextflow run ikmb/hla --reads '/path/to/*_R{1,2}_001.fastq.gz
+```
+
 ### `tools`
 
 This pipeline supports several competing tool chains for HLA calling. Specify them with this option as a comma-separated list. 
@@ -38,9 +62,10 @@ nextflow run ikmb/hla --samples Samples.csv --tools 'hisat,xhla,optitype'
 
 Supported tools:
 
-* xHLA (xhla)
-* Hisat-genotype (hisat)
-* Optitype (optitype)
+* [xHLA](https://github.com/humanlongevity/HLA) (xhla)
+* [Hisat-genotype](https://daehwankimlab.github.io/hisat-genotype/) (hisat)
+* [Optitype](https://github.com/FRED-2/OptiType) (optitype)
 
+### `--run_name`
 
-
+Provide a descriptive name for this analysis run. 
