@@ -172,7 +172,7 @@ pdf.font_size 8
 pdf.move_down 5
 pdf.text footer
 
-pdf.render_file("#{sample}_report.pdf")
+pdf.render_file("#{sample}.pdf")
 
 f = File.new("#{sample}.json","w+")
 data = { "sample" => sample, "calls" => alleles, "pipeline_version" => options.version, "date" => date }

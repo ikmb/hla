@@ -1,6 +1,6 @@
 process OPTITYPE_RUN {
 
-	tag "${meta.patient_id}|${meta.patient_id}"
+	tag "${meta.patient_id}|${meta.sample_id}"
 
 	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/optitype", mode: 'copy'
 
