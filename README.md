@@ -1,6 +1,8 @@
 ![](images/ikmb_bfx_logo.png)
 
-# Pipeline
+# IKMB HLA pipeline
+
+This pipeline performs HLA typing from short read NGS data. 
 
 ## Documentation 
 

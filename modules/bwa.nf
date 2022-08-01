@@ -1,8 +1,10 @@
-process ALIGN {
+process BWA {
+
+	scratch true
+
+	container "docker://ikmb/exome-seq:3.2"
 
 	tag "${meta.patient_id}|${meta.sample_id}"
-
-	//scratch true	
 
 	input:
 	tuple val(meta), path(left),path(right)
@@ -18,14 +20,10 @@ process ALIGN {
 
 	def aligner = "bwa"
 	def options = ""
-	if (params.bwa2) {
-		aligner = "bwa-mem2"
-		options = "-K 1000000"
-	}
 	"""
-		$aligner mem $options -H ${params.dict} -M -R "@RG\\tID:${meta.readgroup_id}\\tPL:ILLUMINA\\tPU:${meta.platform_unit}\\tSM:${meta.patient_id}_${meta.sample_id}\\tLB:${meta.library_id}\\tDS:${params.fasta}\\tCN:${meta.center}" \
-			-t ${task.cpus} ${params.bwa_index} $left $right \
+		bwa mem -H ${params.dict} -M -R "@RG\\tID:${meta.readgroup_id}\\tPL:ILLUMINA\\tSM:${meta.patient_id}_${meta.sample_id}\\tLB:${meta.library_id}\\tDS:${params.fasta}\\tCN:CCGA" \
+			-t ${task.cpus} ${params.fasta} $left $right \
 			| samtools fixmate -@ ${task.cpus} -m - - \
-			| samtools sort -@ ${task.cpus} -m 4G -O bam -o $bam - 
+			| samtools sort -@ ${task.cpus} -m 2G -O bam -o $bam - 
 	"""	
 }

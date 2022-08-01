@@ -24,9 +24,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build new docker image
-        run: docker build --no-cache . -t ikmb/PIPELINE:devel
+        run: docker build --no-cache . -t ikmb/hla:devel
 
       - name: Push Docker image to DockerHub (latest)
         run: |
           echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          docker push ikmb/PIPELINE:devel
+          docker push ikmb/hla:devel

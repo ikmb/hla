@@ -1,21 +1,25 @@
 process XHLA {
+
+	container "docker://humanlongevity/hla:latest"
 	
 	tag "${meta.patient_id}|${meta.sample_id}"
 
-	publishDir "${meta.patient_id}|${meta.sample_id}", mode: 'copy'
+	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/xHLA", mode: 'copy'
 
 	input:
 	tuple val(meta),path(bam),path(bai)
 
 	output:
-	tuple val(meta),path("${results}/*.json"), emit: results
+	tuple val(meta),path(result), emit: results
 
 	script:
-	results = "${meta.patient_id}|${meta.sample_id}_xHLA"
+	sample_id = "${meta.patient_id}_${meta.sample_id}"
+	result = sample_id + ".xHLA.json"
 
 	script:
 
 	"""
-		run.py --sample_id ${meta.sample_id} --input_bam $bam --output_path $results
+		run.py --sample_id $sample_id --input_bam $bam --output_path report --delete
+		cp report/*.json $result
 	"""
 }
