@@ -12,6 +12,6 @@ process HLASCAN {
 	results = meta.sample_id + "_hlascan.txt"
 
 	"""
-		hla_scan -b $bam -d ${params.hlascan_db} -v 38 -t ${task.cpus} -g HLA-${gene} > $results
+		/opt/hlascan/hla_scan -b $bam -d ${params.hlascan_db} -v 38 -t ${task.cpus} -g HLA-${gene} > $results
 	"""
 }

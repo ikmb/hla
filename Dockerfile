@@ -4,7 +4,7 @@ LABEL authors="Marc Hoeppner" \
 
 COPY environment.yml /
 RUN conda env create -f /environment.yml && conda clean -a
-ENV PATH /opt/conda/envs/hla-1.0/bin:/opt/hisat-genotype:/opt/hisat-genotype/hisat2:/opt/hlascan/$PATH
+ENV PATH /opt/conda/envs/hla-1.0/bin:/opt/hisat-genotype:/opt/hisat-genotype/hisat2:/opt/hlascan/:$PATH
 ENV PYTHONPATH /opt/hisat-genotype/hisatgenotype_modules:$PYTHONPATH
 
 RUN apt-get -y update && apt-get -y install make wget git g++ ruby-full ruby-dev

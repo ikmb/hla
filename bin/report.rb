@@ -152,23 +152,14 @@ if hisat
 
 
 	header.each_with_index do |h,i|
-		if h.include?("EM: A")
+
+		if h.include?("EM: ")
+			gene = h.split(" ")[-1]
 			tmp = info[i]
 			tmp.split(",").each do |t|
-				alleles["A"]["Hisat"] << t.split(" ")[0]
-			end
-		elsif h.include?("EM: B")
-			tmp = info[i]
-                        tmp.split(",").each do |t|
-                                alleles["B"]["Hisat"] << t.split(" ")[0]
-                        end
-		elsif h.include?("EM: C")
-			tmp = info[i]
-                        tmp.split(",").each do |t|
-                                alleles["C"]["Hisat"] << t.split(" ")[0]
+                                alleles[gene]["Hisat"] << t.split(" ")[0]
                         end
 		end
-
 	end
 
 end
