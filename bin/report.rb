@@ -45,19 +45,20 @@ opts.parse!
 
 sample = options.sample
 
-alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  }, 
-	"B" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
-	"C" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
-	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
-	"DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
-	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
-	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  }
+alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }, 
+	"B" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"C" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }
 }
 
 files = Dir["*"]
 xhla = files.find{|f| f.upcase.include?("XHLA") }
 hisat = files.find{|f| f.upcase.include?("HISAT") }
 optitype = files.find{|f| f.upcase.include?("OPTI") }
+hlascan = files.select {|f| f.upcase.include?("HLASCAN") }
 
 ########################
 ### xHLA data processing
@@ -73,6 +74,41 @@ if xhla
 
 		alleles[k]["xHLA"] << this_alleles.select {|al| al.match(/^#{k}.*/) }
 	end
+end
+
+###########################
+### HLAscan data processing
+###########################
+
+unless hlascan.empty?
+
+	hlascan.each do |h|
+
+		lines = IO.readlines(h)
+		gene_line = lines.find {|l| l.include?("HLA gene") }
+
+		next unless gene_line
+
+		gene = gene_line.split(" ")[-1].split("-")[-1]
+
+		allele_1 = "???"
+		allele_2 = "???"
+
+		first = lines.find {|l| l.include?("Type 1") }
+		second = lines.find {|l| l.include?("Type 2") }
+
+		if first
+			allele_1 = first.split(/\s+/)[1]
+		end
+		if second
+			allele_2 = second.split(/\s+/)[1]
+		end
+	
+		alleles[gene]["HLAscan"] << allele_1
+		alleles[gene]["HLAscan"] << allele_2
+
+	end
+
 end
 
 ############################
