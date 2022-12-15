@@ -95,8 +95,7 @@ workflow HLA {
 
 	if ( 'hlascan' in tools) {
 		HLASCAN(
-			TRIM_AND_ALIGN.out.bam,
-			ch_genes
+			TRIM_AND_ALIGN.out.bam.combine(ch_genes)
 		)
 		ch_reports = ch_reports.mix(HLASCAN.out.report)
 	}

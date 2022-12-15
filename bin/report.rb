@@ -72,7 +72,7 @@ if xhla
 
 	alleles.keys.each do |k|
 
-		alleles[k]["xHLA"] << this_alleles.select {|al| al.match(/^#{k}.*/) }
+		this_alleles.select {|al| al.match(/^#{k}.*/) }.each {|a| alleles[k]["xHLA"] << a }
 	end
 end
 
@@ -98,10 +98,10 @@ unless hlascan.empty?
 		second = lines.find {|l| l.include?("Type 2") }
 
 		if first
-			allele_1 = first.split(/\s+/)[1]
+			allele_1 = "#{gene}*#{first.split(/\s+/)[2]}"
 		end
 		if second
-			allele_2 = second.split(/\s+/)[1]
+			allele_2 = "#{gene}*#{second.split(/\s+/)[2]}"
 		end
 	
 		alleles[gene]["HLAscan"] << allele_1
@@ -157,7 +157,7 @@ if hisat
 			gene = h.split(" ")[-1]
 			tmp = info[i]
 			tmp.split(",").each do |t|
-                                alleles[gene]["Hisat"] << t.split(" ")[0]
+                                alleles[gene]["Hisat"] << t.split(" ")[0].strip
                         end
 		end
 	end
@@ -192,13 +192,14 @@ pdf.move_down 20
 
 # Table content
 results = []
-results << [ "Allele", "xHLA (Nicht-kommerziell)", "Hisat", "Optitype" ]
+results << [ "HLA Gene", "xHLA", "Hisat", "Optitype", "HLAscan" ]
 alleles.keys.each do |k|
-	results << [ k, alleles[k]["xHLA"].sort.join(", "), alleles[k]["Hisat"].sort.join(", "), alleles[k]["Optitype"].sort.join(", ") ]
+	results << [ k, alleles[k]["xHLA"].sort.join("\n"), alleles[k]["Hisat"].sort.join("\n"), alleles[k]["Optitype"].sort.join("\n"), alleles[k]["HLAscan"].sort.join("\n") ]
 end
 
 t = pdf.make_table( 
-	results
+	results,
+	:header => true
  )
 
 t.draw
