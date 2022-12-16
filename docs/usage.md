@@ -54,7 +54,7 @@ A regular expression pointing to a set of paired-end fastQ files.
 nextflow run ikmb/hla --reads '/path/to/*_R{1,2}_001.fastq.gz'
 ```
 
-### `--tools`
+### `--tools` [ default: hisat,xhla,hlascan ]
 
 This pipeline supports several competing tool chains for HLA calling. Specify them with this option as a comma-separated list. 
 
@@ -65,8 +65,9 @@ nextflow run ikmb/hla --samples Samples.csv --tools 'hisat,xhla,optitype'
 Supported tools:
 
 * [xHLA](https://github.com/humanlongevity/HLA) (xhla)
-* [Hisat-genotype](https://daehwankimlab.github.io/hisat-genotype/) (hisat)   SLOW!!
+* [Hisat-genotype](https://daehwankimlab.github.io/hisat-genotype/) (hisat)   Slow on anything other than targetted sequencing!
 * [Optitype](https://github.com/FRED-2/OptiType) (optitype)
+* [HLAscan](https://github.com/SyntekabioTools/HLAscan) (hlascan)
 
 ### `--run_name`
 
