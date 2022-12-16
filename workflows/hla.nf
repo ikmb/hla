@@ -6,6 +6,7 @@ include { SOFTWARE_VERSIONS } from '../modules/software_versions'
 include { MULTIQC } from '../modules/multiqc'
 include { OPTITYPE } from '../subworkflows/optitype'
 include { REPORT } from '../modules/reporting'
+include { HLASCAN } from '../modules/hlascan'
 
 // Helper function for the sample sheet parsing to produce sane channel elements
 def returnFile(it) {
@@ -60,6 +61,8 @@ if (params.samples) {
 
 tools = params.tools ? params.tools.split(',').collect{it.trim().toLowerCase().replaceAll('-', '').replaceAll('_', '')} : []
 
+ch_genes = Channel.fromList(params.hla_genes)
+
 ch_versions = Channel.from([])
 ch_qc = Channel.from([])
 ch_reports = Channel.from([])
@@ -88,6 +91,13 @@ workflow HLA {
 			TRIM_AND_ALIGN.out.bam
 		)
 		ch_reports = ch_reports.mix(XHLA_TYPING.out.report)
+	}
+
+	if ( 'hlascan' in tools) {
+		HLASCAN(
+			TRIM_AND_ALIGN.out.bam.combine(ch_genes)
+		)
+		ch_reports = ch_reports.mix(HLASCAN.out.report)
 	}
 
 	if ('optitype' in tools) {

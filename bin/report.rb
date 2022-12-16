@@ -45,19 +45,20 @@ opts.parse!
 
 sample = options.sample
 
-alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  }, 
-	"B" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
-	"C" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
-	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
-	"DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
-	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  },
-	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => []  }
+alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }, 
+	"B" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"C" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }
 }
 
 files = Dir["*"]
 xhla = files.find{|f| f.upcase.include?("XHLA") }
 hisat = files.find{|f| f.upcase.include?("HISAT") }
 optitype = files.find{|f| f.upcase.include?("OPTI") }
+hlascan = files.select {|f| f.upcase.include?("HLASCAN") }
 
 ########################
 ### xHLA data processing
@@ -71,8 +72,43 @@ if xhla
 
 	alleles.keys.each do |k|
 
-		alleles[k]["xHLA"] << this_alleles.select {|al| al.match(/^#{k}.*/) }
+		this_alleles.select {|al| al.match(/^#{k}.*/) }.each {|a| alleles[k]["xHLA"] << a }
 	end
+end
+
+###########################
+### HLAscan data processing
+###########################
+
+unless hlascan.empty?
+
+	hlascan.each do |h|
+
+		lines = IO.readlines(h)
+		gene_line = lines.find {|l| l.include?("HLA gene") }
+
+		next unless gene_line
+
+		gene = gene_line.split(" ")[-1].split("-")[-1]
+
+		allele_1 = "???"
+		allele_2 = "???"
+
+		first = lines.find {|l| l.include?("Type 1") }
+		second = lines.find {|l| l.include?("Type 2") }
+
+		if first
+			allele_1 = "#{gene}*#{first.split(/\s+/)[2]}"
+		end
+		if second
+			allele_2 = "#{gene}*#{second.split(/\s+/)[2]}"
+		end
+	
+		alleles[gene]["HLAscan"] << allele_1
+		alleles[gene]["HLAscan"] << allele_2
+
+	end
+
 end
 
 ############################
@@ -116,23 +152,14 @@ if hisat
 
 
 	header.each_with_index do |h,i|
-		if h.include?("EM: A")
+
+		if h.include?("EM: ")
+			gene = h.split(" ")[-1]
 			tmp = info[i]
 			tmp.split(",").each do |t|
-				alleles["A"]["Hisat"] << t.split(" ")[0]
-			end
-		elsif h.include?("EM: B")
-			tmp = info[i]
-                        tmp.split(",").each do |t|
-                                alleles["B"]["Hisat"] << t.split(" ")[0]
-                        end
-		elsif h.include?("EM: C")
-			tmp = info[i]
-                        tmp.split(",").each do |t|
-                                alleles["C"]["Hisat"] << t.split(" ")[0]
+                                alleles[gene]["Hisat"] << t.split(" ")[0].strip
                         end
 		end
-
 	end
 
 end
@@ -165,13 +192,14 @@ pdf.move_down 20
 
 # Table content
 results = []
-results << [ "Allele", "xHLA (Nicht-kommerziell)", "Hisat", "Optitype" ]
+results << [ "HLA Gene", "xHLA", "Hisat", "Optitype", "HLAscan" ]
 alleles.keys.each do |k|
-	results << [ k, alleles[k]["xHLA"].sort.join(", "), alleles[k]["Hisat"].sort.join(", "), alleles[k]["Optitype"].sort.join(", ") ]
+	results << [ k, alleles[k]["xHLA"].sort.join("\n"), alleles[k]["Hisat"].sort.join("\n"), alleles[k]["Optitype"].sort.join("\n"), alleles[k]["HLAscan"].sort.join("\n") ]
 end
 
 t = pdf.make_table( 
-	results
+	results,
+	:header => true
  )
 
 t.draw
