@@ -56,6 +56,10 @@ alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" =
 	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }
 }
 
+# Options
+## Only show hisat results supported at this level
+hisat_cutoff = 20.0
+
 # Find result files
 files = Dir["*"]
 xhla = files.find{|f| f.upcase.include?("XHLA") }
@@ -176,7 +180,7 @@ if hisat
 				c = t.split(" ")[0].strip
 				abundance = t.split(" ")[-1].gsub(")","")
 				f = abundance.split("%")[0].to_f
-				next if f < 20.0
+				next if f < hisat_cutoff
                                 alleles[gene]["Hisat"] << "#{c} (#{abundance})"
                         end
 		end
