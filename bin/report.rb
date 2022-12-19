@@ -51,14 +51,20 @@ alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" =
 	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
-	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }
+	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DPA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }
 }
 
+# Find result files
 files = Dir["*"]
 xhla = files.find{|f| f.upcase.include?("XHLA") }
 hisat = files.find{|f| f.upcase.include?("HISAT") }
 optitype = files.find{|f| f.upcase.include?("OPTI") }
 hlascan = files.select {|f| f.upcase.include?("HLASCAN") }
+
+# The header of the result table, only including those tools we actually have data for. 
+rheader = [ "HLA Genes" ]
 
 ########################
 ### xHLA data processing
@@ -74,6 +80,8 @@ if xhla
 
 		this_alleles.select {|al| al.match(/^#{k}.*/) }.each {|a| alleles[k]["xHLA"] << a }
 	end
+
+	rheader << "xHLA"
 end
 
 ###########################
@@ -103,11 +111,15 @@ unless hlascan.empty?
 		if second
 			allele_2 = "#{gene}*#{second.split(/\s+/)[2]}"
 		end
-	
+		
+		warn gene	
+
 		alleles[gene]["HLAscan"] << allele_1
 		alleles[gene]["HLAscan"] << allele_2
 
 	end
+
+	rheader << "HLAscan"
 
 end
 
@@ -134,6 +146,8 @@ if optitype
 		end
 	end
 
+	rheader << "Optitype"
+
 end
 	
 
@@ -157,11 +171,18 @@ if hisat
 			gene = h.split(" ")[-1]
 			tmp = info[i]
 			tmp.split(",").each do |t|
-                                alleles[gene]["Hisat"] << t.split(" ")[0].strip
+				# C*07:01:01:01 (abundance: 50.46%),C*01:02:01 (abundance: 49.54%) 
+				# We show percentages for ambiguous calls, but only >= 20% fraction
+				c = t.split(" ")[0].strip
+				abundance = t.split(" ")[-1].gsub(")","")
+				f = abundance.split("%")[0].to_f
+				next if f < 20.0
+                                alleles[gene]["Hisat"] << "#{c} (#{abundance})"
                         end
 		end
 	end
 
+	rheader << "Hisat"
 end
 
 			
@@ -171,14 +192,14 @@ end
 
 date = Date.today.strftime("%d.%m.%Y")
 
-footer = "Bericht erstellt am: #{date} | Pipeline version: #{options.version}"
+footer = "Bericht erstellt am: #{date} | Pipeline version: github.com/ikmb/hla:#{options.version}"
 
 pdf = Prawn::Document.new
 
 pdf.font("Helvetica")
 pdf.font_size 14
 
-pdf.text "HLA Typisierung mittels Sequenzierung (NGS)"
+pdf.text "IKMB - HLA Typisierung mittels Sequenzierung (NGS)"
 
 pdf.move_down 5
 pdf.stroke_horizontal_rule
@@ -192,10 +213,18 @@ pdf.move_down 20
 
 # Table content
 results = []
-results << [ "HLA Gene", "xHLA", "Hisat", "Optitype", "HLAscan" ]
+results << rheader # table header
+
 alleles.keys.each do |k|
-	results << [ k, alleles[k]["xHLA"].sort.join("\n"), alleles[k]["Hisat"].sort.join("\n"), alleles[k]["Optitype"].sort.join("\n"), alleles[k]["HLAscan"].sort.join("\n") ]
+	r = [ k ]
+	this_result = [ k ]
+	rheader[1..-1].each do |h|
+		this_result << alleles[k][h].sort.join("\n")
+	end
+	results << this_result
 end
+
+warn results.inspect
 
 t = pdf.make_table( 
 	results,
