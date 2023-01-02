@@ -81,7 +81,8 @@ workflow HLA {
 
 	if ( 'hisat' in tools ) {
 		HISAT_TYPING(
-			TRIM_AND_ALIGN.out.reads
+			TRIM_AND_ALIGN.out.reads,
+			params.hla_genes.join(",")
 		)
 		ch_reports = ch_reports.mix(HISAT_TYPING.out.report)
 	}

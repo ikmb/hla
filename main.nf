@@ -35,7 +35,7 @@ multiqc_report = Channel.from([])
 log.info "------------------------------------------"
 log.info "IKMB HLA Pipeline"
 log.info "------------------------------------------"
-log.info "${workflow.manifest.description}              v${params.version}"
+log.info "${workflow.manifest.description}		v${params.version}"
 log.info "Nextflow Version:						$workflow.nextflow.version"
 log.info "Tools requested:						${params.tools}"
 log.info "------------------------------------------"

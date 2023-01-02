@@ -6,6 +6,7 @@ workflow HISAT_TYPING {
 
 	take:
 		reads
+		genes
 
 	main:
 
@@ -25,7 +26,8 @@ workflow HISAT_TYPING {
         )
 	
 	HISAT_GENOTYPE(
-		reads_to_merge.single.mix(FASTQ_MERGE.out.reads)
+		reads_to_merge.single.mix(FASTQ_MERGE.out.reads),
+		genes.collect()
 	)
 	
 	HISAT_REPORT(

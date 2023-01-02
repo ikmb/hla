@@ -2,7 +2,7 @@ process REPORT {
 
 	tag "${meta.patient_id}|${meta.sample_id}"
 
-	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}", mode: 'copy'
+	publishDir "${params.outdir}/Reports", mode: 'copy'
 
 	input:
 	tuple val(meta),path(reports)
