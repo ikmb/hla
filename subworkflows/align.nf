@@ -3,11 +3,13 @@ include { BWA } from "./../modules/bwa"
 include { MERGE_MULTI_LANE } from "./../modules/samtools/merge_multi_lane"
 include { BAM_INDEX }  from "./../modules/samtools/bam_index"
 include { DEDUP } from "./../modules/samtools/dedup"
+include { BEDCOV } from "./../modules/samtools/bedcov"
 
 workflow TRIM_AND_ALIGN {
 
 	take:
 		reads
+		bed
 	main:
 
 		ch_versions = Channel.from([])
@@ -31,12 +33,18 @@ workflow TRIM_AND_ALIGN {
 
 		MERGE_MULTI_LANE( bam_to_merge.multiple )
 		BAM_INDEX(MERGE_MULTI_LANE.out.bam.mix( bam_to_merge.single ))
+	
+		BEDCOV(
+			BAM_INDEX.out.bam,
+			bed.collect()
+		)
 
 		DEDUP(BAM_INDEX.out.bam)
 		ch_final_bam = DEDUP.out.bam
 		
 	emit:
 		reads = FASTP.out.reads
+		bedcov = BEDCOV.out.report
 		bam = ch_final_bam
 		qc = FASTP.out.json
 		dedup_report = DEDUP.out.report

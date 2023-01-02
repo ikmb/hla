@@ -108,12 +108,12 @@ workflow.onComplete {
         	if (workflow.success && !params.skip_multiqc) {
             		mqc_report = multiqc_report.getVal()
             		if (mqc_report.getClass() == ArrayList){
-                		log.warn "[PIpeline] Found multiple reports from process 'multiqc', will use only one"
+                		log.warn "[Pipeline] Found multiple reports from process 'multiqc', will use only one"
                 		mqc_report = mqc_report[0]
                 	}
         	}
     	} catch (all) {
-        	log.warn "[IKMB ExoSeq] Could not attach MultiQC report to summary email"
+        	log.warn "[IKMB HLA] Could not attach MultiQC report to summary email"
   	}
 
 	def smail_fields = [ email: params.email, subject: subject, email_txt: email_txt, email_html: email_html, baseDir: "$baseDir", mqcFile: mqc_report, mqcMaxSize: params.maxMultiqcEmailFileSize.toBytes() ]

@@ -63,6 +63,8 @@ tools = params.tools ? params.tools.split(',').collect{it.trim().toLowerCase().r
 
 ch_genes = Channel.fromList(params.hla_genes)
 
+ch_bed = Channel.fromPath("$baseDir/assets/targets/genes.bed", checkIfExists: true)
+
 ch_versions = Channel.from([])
 ch_qc = Channel.from([])
 ch_reports = Channel.from([])
@@ -74,10 +76,12 @@ workflow HLA {
 
 	// Align reads to chromosome 6
 	TRIM_AND_ALIGN(
-		reads_fastp
+		reads_fastp,
+		ch_bed
 	)
 	//ch_versions = FASTP.out.version
 	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.qc)
+	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.bedcov.map { m,r -> r } )
 
 	if ( 'hisat' in tools ) {
 		HISAT_TYPING(
