@@ -48,7 +48,6 @@ sample = options.sample
 alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }, 
 	"B" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"C" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
-	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
@@ -58,7 +57,7 @@ alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" =
 
 # Options
 ## Only show hisat results supported at this level
-hisat_cutoff = 20.0
+hisat_cutoff = 0.3
 
 # Find result files
 files = Dir["*"]
@@ -171,11 +170,11 @@ if hisat
 
 	header.each_with_index do |h,i|
 
-		if h.include?("EM: ")
+		if h.include?("Allele splitting: ")
 			gene = h.split(" ")[-1]
 			tmp = info[i]
 			tmp.split(",").each do |t|
-				# C*07:01:01:01 (abundance: 50.46%),C*01:02:01 (abundance: 49.54%) 
+				# C*08 - Trimmed (score: 0.9090),C*08:02 - Trimmed (score: 0.3636)
 				# We show percentages for ambiguous calls, but only >= 20% fraction
 				c = t.split(" ")[0].strip
 				abundance = t.split(" ")[-1].gsub(")","")

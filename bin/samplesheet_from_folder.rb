@@ -26,7 +26,9 @@ options.centre ? center = options.centre : center = "IKMB"
 
 fastq_files = Dir["#{options.folder}/*_R*.fastq.gz"]
 
-groups = fastq_files.group_by{|f| f.split("/")[-1].split(/_S[0-9]*_/)[0] }
+# 221200000285-DS9_22Dez285-DL009_S9_L001_R2_001.fastq.gz
+
+groups = fastq_files.group_by{|f| f.split("/")[-1].split(/_S[0-9]*_L0/)[0] }
 
 warn "Building input sample sheet from FASTQ folder"
 warn "Performing sanity check on md5sums" if options.sanity
@@ -34,8 +36,6 @@ warn "Performing sanity check on md5sums" if options.sanity
 options.platform ? sequencer = options.platform : sequencer = "NovaSeq6000"
 
 puts "patientID;sampleID;libraryID;rgID;R1;R2"
-
-#G00076-L2_S19_L003_R1_001.fastq.gz
 
 individuals = []
 samples = []
@@ -64,10 +64,10 @@ groups.each do |group, files|
 			}
 		end
 
-		# H26247-L3_S1_L001_R1_001_fastqc.html
-        	library = group.split("_S")[0]
-        	sample = group.split("_S")[0]
-		individual = group.split("-")[0]
+		# 221200000285-DS9_22Dez285-DL009_S9_L001_R2_001.fastq.gz
+        	library = group.split("_")[1]
+        	sample = group.split("_")[1]
+		individual = group.split("_")[1]
 
 		individuals << individual
 		samples << sample
@@ -82,7 +82,7 @@ groups.each do |group, files|
 
         	pgu = flowcell_id + "." + lane + "." + index
 
-        	puts "Indiv_#{individual};Sample_#{sample};#{library};#{readgroup};#{left};#{right}"
+        	puts "I_#{individual};S_#{sample};#{library};#{readgroup};#{left};#{right}"
 	end
 end
 
