@@ -35,9 +35,9 @@ process JSON2XLS {
 	path(xls)
 
 	script:
-	xls = "report.xlsx"
+	xls = params.run_name + "-report.xlsx"
 
 	"""
-		json2xlsx.pl --outfile $xls
+		json2xls.pl --outfile $xls
 	"""
 }

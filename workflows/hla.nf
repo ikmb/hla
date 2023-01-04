@@ -7,6 +7,7 @@ include { MULTIQC } from '../modules/multiqc'
 include { OPTITYPE } from '../subworkflows/optitype'
 include { REPORT } from '../modules/reporting'
 include { HLASCAN } from '../modules/hlascan'
+include { JSON2XLS } from '../modules/reporting'
 
 // Helper function for the sample sheet parsing to produce sane channel elements
 def returnFile(it) {
@@ -117,7 +118,7 @@ workflow HLA {
 	)
 
 	JSON2XLS(
-		REPORt.out.json.map {m,j ->j }.collect()
+		REPORT.out.json.map {m,j ->j }.collect()
 	)
 
 	SOFTWARE_VERSIONS(
