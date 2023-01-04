@@ -7,6 +7,7 @@ include { MULTIQC } from '../modules/multiqc'
 include { OPTITYPE } from '../subworkflows/optitype'
 include { REPORT } from '../modules/reporting'
 include { HLASCAN } from '../modules/hlascan'
+include { JSON2XLS } from '../modules/reporting'
 
 // Helper function for the sample sheet parsing to produce sane channel elements
 def returnFile(it) {
@@ -63,6 +64,8 @@ tools = params.tools ? params.tools.split(',').collect{it.trim().toLowerCase().r
 
 ch_genes = Channel.fromList(params.hla_genes)
 
+ch_bed = Channel.fromPath("$baseDir/assets/targets/genes.bed", checkIfExists: true)
+
 ch_versions = Channel.from([])
 ch_qc = Channel.from([])
 ch_reports = Channel.from([])
@@ -74,10 +77,12 @@ workflow HLA {
 
 	// Align reads to chromosome 6
 	TRIM_AND_ALIGN(
-		reads_fastp
+		reads_fastp,
+		ch_bed
 	)
 	//ch_versions = FASTP.out.version
 	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.qc)
+	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.bedcov.map { m,r -> r } )
 
 	if ( 'hisat' in tools ) {
 		HISAT_TYPING(
@@ -110,6 +115,10 @@ workflow HLA {
 	
 	REPORT(
 		ch_reports.groupTuple()
+	)
+
+	JSON2XLS(
+		REPORT.out.json.map {m,j ->j }.collect()
 	)
 
 	SOFTWARE_VERSIONS(
