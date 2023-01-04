@@ -21,3 +21,23 @@ process REPORT {
 	"""
 
 }
+
+process JSON2XLS {
+
+	tag "All"
+
+	publishDir "${params.outdir}/Reports", mode: 'copy'
+
+	input:
+	path(jsons)
+
+	output:
+	path(xls)
+
+	script:
+	xls = "report.xlsx"
+
+	"""
+		json2xlsx.pl --outfile $xls
+	"""
+}

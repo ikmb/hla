@@ -116,6 +116,10 @@ workflow HLA {
 		ch_reports.groupTuple()
 	)
 
+	JSON2XLS(
+		REPORt.out.json.map {m,j ->j }.collect()
+	)
+
 	SOFTWARE_VERSIONS(
 		ch_versions.collect()
 	)		
