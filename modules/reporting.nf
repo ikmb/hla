@@ -34,6 +34,9 @@ process JSON2XLS {
 	output:
 	path(xls)
 
+	when:
+	params.excel
+
 	script:
 	xls = params.run_name + "-report.xlsx"
 
