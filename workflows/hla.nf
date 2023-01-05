@@ -63,6 +63,8 @@ if (params.samples) {
 tools = params.tools ? params.tools.split(',').collect{it.trim().toLowerCase().replaceAll('-', '').replaceAll('_', '')} : []
 
 ch_genes = Channel.fromList(params.hla_genes)
+// HLAscan is unique in that it can type the HLA-DRB5 gene - we have to add this separately. 
+ch_hlascan_genes = Channel.fromList(params.hla_genes_hlascan)
 
 ch_bed = Channel.fromPath("$baseDir/assets/targets/genes.bed", checkIfExists: true)
 
@@ -100,8 +102,10 @@ workflow HLA {
 	}
 
 	if ( 'hlascan' in tools) {
+		// mix the hlscan-only genes in and make the list unique, just in case
+		ch_genes_hlascan = ch_genes.mix(ch_hlascan_genes).unique()
 		HLASCAN(
-			TRIM_AND_ALIGN.out.bam.combine(ch_genes)
+			TRIM_AND_ALIGN.out.bam.combine(ch_genes_hlascan)
 		)
 		ch_reports = ch_reports.mix(HLASCAN.out.report)
 	}

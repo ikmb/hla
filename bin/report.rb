@@ -50,6 +50,7 @@ alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" =
 	"C" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DRB5" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DPA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }

@@ -81,3 +81,6 @@ This pipeline has a built-in test. To run it, simply provide the appropriate pro
 nextflow run ikmb/hla -profile standard,test
 ```
 
+### `--excel` [ true | false (default) ]
+
+Create a multi-sheet Excel document with all results. This should only be used for small sample numbers (<= 10) and is hence off by default!
