@@ -52,6 +52,7 @@ alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" =
 	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DRB5" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
+	"DRB3" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DPA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
 	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }
 }
@@ -103,8 +104,8 @@ unless hlascan.empty?
 
 		gene = gene_line.split(" ")[-1].split("-")[-1]
 
-		allele_1 = "???"
-		allele_2 = "???"
+		allele_1 = ""
+		allele_2 = ""
 
 		first = lines.find {|l| l.include?("Type 1") }
 		second = lines.find {|l| l.include?("Type 2") }
@@ -116,8 +117,6 @@ unless hlascan.empty?
 			allele_2 = "#{gene}*#{second.split(/\s+/)[2]}"
 		end
 		
-		warn gene	
-
 		alleles[gene]["HLAscan"] << allele_1
 		alleles[gene]["HLAscan"] << allele_2
 
