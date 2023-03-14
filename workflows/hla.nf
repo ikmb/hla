@@ -25,13 +25,13 @@ if (params.samples) {
 			def meta = [:]
                         meta.patient_id = row.patientID
                         meta.sample_id = row.sampleID
-			meta.library_id = row.libraryID
+						meta.library_id = row.libraryID
                         meta.readgroup_id = row.rgID
                         left = returnFile( row.R1 )
                         right = returnFile( row.R2)
                         [ meta, left, right ]
                 }
-       .set {  reads_fastp }
+		.set {  reads_fastp }
 } else if (params.folder) {
         Channel.fromFilePairs(params.folder + "/*_L0*_R{1,2}_001.fastq.gz", flat: true)
         .ifEmpty { exit 1, "Did not find any reads matching your input pattern..." }
@@ -85,6 +85,10 @@ workflow HLA {
 	//ch_versions = FASTP.out.version
 	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.qc)
 	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.bedcov.map { m,r -> r } )
+
+	MERGE_READS(
+		TRIM_AND_ALIGN.out.reads
+	)
 
 	if ( 'hisat' in tools ) {
 		HISAT_TYPING(
