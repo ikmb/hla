@@ -1,6 +1,6 @@
 process RENAME_READS {
 
-    publishDir "${params.outdir}/GenDX_Reads", mode: 'copy'
+    publishDir "${params.outdir}/00GenDX", mode: 'copy'
     
     input:
     tuple val(meta),path(r1),path(r2)
@@ -13,7 +13,7 @@ process RENAME_READS {
     r2_renamed = meta.sample_id + "_R2_001.fastq.gz"
 
     """
-        cp $r1 $1_renamed
+        cp $r1 $r1_renamed
         cp $r2 $r2_renamed
     """
 

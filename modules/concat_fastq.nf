@@ -1,6 +1,6 @@
 process CONCAT_FASTQ {
 
-    publishDir "${params.outdir}/GenDX", mode: 'copy'
+    //publishDir "${params.outdir}/GenDX", mode: 'copy'
     
     input:
     tuple val(meta),path(r1),path(r2)

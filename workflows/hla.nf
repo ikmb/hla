@@ -8,6 +8,7 @@ include { OPTITYPE } from '../subworkflows/optitype'
 include { REPORT } from '../modules/reporting'
 include { HLASCAN } from '../modules/hlascan'
 include { JSON2XLS } from '../modules/reporting'
+include { MERGE_READS } from "./../subworkflows/merge_reads"
 
 // Helper function for the sample sheet parsing to produce sane channel elements
 def returnFile(it) {
@@ -25,7 +26,7 @@ if (params.samples) {
 			def meta = [:]
                         meta.patient_id = row.patientID
                         meta.sample_id = row.sampleID
-						meta.library_id = row.libraryID
+			meta.library_id = row.libraryID
                         meta.readgroup_id = row.rgID
                         left = returnFile( row.R1 )
                         right = returnFile( row.R2)

@@ -10,7 +10,7 @@ workflow MERGE_READS {
         CONCAT_FASTQ(
             reads.map { m,f,r -> 
                 [[
-                    sample_id: m.sample_id
+                    sample_id: m.sample_id,
                     patient_id: m.patient_id
                 ],f,r]
             }.groupTuple()
@@ -23,5 +23,5 @@ workflow MERGE_READS {
     emit:
     reads = RENAME_READS.out.reads
 
-´
+
 }

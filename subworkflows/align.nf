@@ -4,7 +4,6 @@ include { MERGE_MULTI_LANE } from "./../modules/samtools/merge_multi_lane"
 include { BAM_INDEX }  from "./../modules/samtools/bam_index"
 include { DEDUP } from "./../modules/samtools/dedup"
 include { BEDCOV } from "./../modules/samtools/bedcov"
-include { RENANE_READS } from "./../modules/rename_reads"
 
 workflow TRIM_AND_ALIGN {
 
@@ -17,10 +16,7 @@ workflow TRIM_AND_ALIGN {
 
 		FASTP(
 			reads
-        )
-		RENAME_READS(
-			FASTP.out.reads
-		)
+        	)
 		BWA( FASTP.out.reads )
 		bam_mapped = BWA.out.bam.map { meta, bam ->
                         new_meta = [:]

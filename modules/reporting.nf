@@ -12,7 +12,7 @@ process REPORT {
 	tuple val(meta),path(json), emit: json
 
 	script:
-	sample = "${meta.patient_id}_${meta.sample_id}"
+	sample = "${meta.sample_id}"
 	json = "${sample}.json"
 	pdf = "${sample}.pdf"
 	
