@@ -9,6 +9,7 @@ include { REPORT } from '../modules/reporting'
 include { HLASCAN } from '../modules/hlascan'
 include { JSON2XLS } from '../modules/reporting'
 include { MERGE_READS } from "./../subworkflows/merge_reads"
+include { HLAHD } from "./../modules/hlahd"
 
 // Helper function for the sample sheet parsing to produce sane channel elements
 def returnFile(it) {
@@ -99,6 +100,19 @@ workflow HLA {
 		ch_reports = ch_reports.mix(HISAT_TYPING.out.report)
 	}
 
+	if ( 'hlahd' in tools ) {
+		HLAHD(
+			TRIM_AND_ALIGN.out.reads.map { m,b,i ->
+				[[
+					patient_id: m.patient_id,
+					sample_id: m.sample_id
+				],b,i]
+			}
+		)
+
+		ch_reports = ch_reports.mix(HLAHD.out.report)
+	}
+
 	if ('xhla' in tools) {
 		XHLA_TYPING(
 			TRIM_AND_ALIGN.out.bam
@@ -121,7 +135,7 @@ workflow HLA {
 		)
 		ch_reports = ch_reports.mix(OPTITYPE.out.report)
 	}
-	
+
 	REPORT(
 		ch_reports.groupTuple()
 	)

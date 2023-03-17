@@ -45,16 +45,17 @@ opts.parse!
 
 sample = options.sample
 
-alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }, 
-	"B" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
-	"C" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
-	"DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
-	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
-	"DRB5" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
-	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
-	"DRB3" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
-	"DPA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  },
-	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => []  }
+alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  }, 
+	"B" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
+	"C" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
+	"DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
+	"DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
+	"DRB4" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
+	"DRB5" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
+	"DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
+	"DRB3" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
+	"DPA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
+	"DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  }
 }
 
 # Options
@@ -67,9 +68,32 @@ xhla = files.find{|f| f.upcase.include?("XHLA") }
 hisat = files.find{|f| f.upcase.include?("HISAT") }
 optitype = files.find{|f| f.upcase.include?("OPTI") }
 hlascan = files.select {|f| f.upcase.include?("HLASCAN") }
+hlahd = files.find {|f| f.upcase.include?("HLAHD") }
 
 # The header of the result table, only including those tools we actually have data for. 
 rheader = [ "HLA Genes" ]
+
+########################
+# HLA-HD data processing
+########################
+
+if hlahd 
+
+	IO.readlines(hlahd).each do |line|
+		
+		line.strip!
+		# A       HLA-A*24:02:01  HLA-A*01:01:01
+
+		gene,a,b = line.split("\t")
+		if alleles.has_key?(gene)
+			a = "" if a.include?("Not typed")
+			b = "" if b.include?("Not typed")
+			alleles[gene]["HLA-HD"] = [ a,b ]
+		end
+
+	end
+	rheader << "HLA-HD"
+end
 
 ########################
 ### xHLA data processing
@@ -103,6 +127,8 @@ unless hlascan.empty?
 		next unless gene_line
 
 		gene = gene_line.split(" ")[-1].split("-")[-1]
+
+		next unless alleles.has_key?(gene)
 
 		allele_1 = ""
 		allele_2 = ""
@@ -218,7 +244,7 @@ pdf.move_down 20
 results = []
 results << rheader # table header
 
-alleles.keys.each do |k|
+alleles.keys.sort.each do |k|
 	r = [ k ]
 	this_result = [ k ]
 	rheader[1..-1].each do |h|
