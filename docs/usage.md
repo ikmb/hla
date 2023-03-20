@@ -68,6 +68,9 @@ Supported tools:
 * [Hisat-genotype](https://daehwankimlab.github.io/hisat-genotype/) (hisat)   Slow on anything other than targetted sequencing!
 * [Optitype](https://github.com/FRED-2/OptiType) (optitype)
 * [HLAscan](https://github.com/SyntekabioTools/HLAscan) (hlascan)
+* [HLA-HD](https://www.genome.med.kyoto-u.ac.jp/HLA-HD/) (hlahd)
+
+Please note: HLA-HD cannot be containerized due to licensing restrictions. It can thus only be made available as a local software module (MedCluster only!).
 
 ### `--run_name`
 

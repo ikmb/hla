@@ -17,3 +17,4 @@ RUN cd /opt && mkdir hlascan && cd hlascan && wget https://github.com/Syntekabio
 RUN gem install json
 RUN gem install prawn
 RUN gem install prawn-table
+RUN gem install pdf-reader

@@ -8,6 +8,8 @@ include { OPTITYPE } from '../subworkflows/optitype'
 include { REPORT } from '../modules/reporting'
 include { HLASCAN } from '../modules/hlascan'
 include { JSON2XLS } from '../modules/reporting'
+include { MERGE_READS } from "./../subworkflows/merge_reads"
+include { HLAHD } from "./../modules/hlahd"
 
 // Helper function for the sample sheet parsing to produce sane channel elements
 def returnFile(it) {
@@ -31,7 +33,7 @@ if (params.samples) {
                         right = returnFile( row.R2)
                         [ meta, left, right ]
                 }
-       .set {  reads_fastp }
+		.set {  reads_fastp }
 } else if (params.folder) {
         Channel.fromFilePairs(params.folder + "/*_L0*_R{1,2}_001.fastq.gz", flat: true)
         .ifEmpty { exit 1, "Did not find any reads matching your input pattern..." }
@@ -86,12 +88,29 @@ workflow HLA {
 	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.qc)
 	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.bedcov.map { m,r -> r } )
 
+	MERGE_READS(
+		TRIM_AND_ALIGN.out.reads
+	)
+
 	if ( 'hisat' in tools ) {
 		HISAT_TYPING(
 			TRIM_AND_ALIGN.out.reads,
 			params.hla_genes.join(",")
 		)
 		ch_reports = ch_reports.mix(HISAT_TYPING.out.report)
+	}
+
+	if ( 'hlahd' in tools ) {
+		HLAHD(
+			TRIM_AND_ALIGN.out.reads.map { m,b,i ->
+				[[
+					patient_id: m.patient_id,
+					sample_id: m.sample_id
+				],b,i]
+			}
+		)
+
+		ch_reports = ch_reports.mix(HLAHD.out.report)
 	}
 
 	if ('xhla' in tools) {
@@ -116,7 +135,7 @@ workflow HLA {
 		)
 		ch_reports = ch_reports.mix(OPTITYPE.out.report)
 	}
-	
+
 	REPORT(
 		ch_reports.groupTuple()
 	)

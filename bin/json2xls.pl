@@ -55,12 +55,15 @@ foreach my $file (@files) {
 	
 	# Parse data from hash
 	my $sample = %$json{"sample"};
+	my @s = (split "_", $sample);
+	my $sample_name = join("_", @s[2...$#s]) ;
+	printf STDERR $sample_name . "\n";
 	my $calls = %$json{"calls"};
 	my $pipeline_version = %$json{"pipeline_version"};
 	my $date = %$json{"date"};
 
 	# Add a new sheet
-        my $worksheet = $workbook->add_worksheet(substr($sample,0,25));
+        my $worksheet = $workbook->add_worksheet(substr($sample_name,0,25));
 
 	my @header = () ;
 
@@ -82,7 +85,11 @@ foreach my $file (@files) {
 		foreach my $tool (sort keys %$gdata) {
 			push(@header,$tool);
 			my $c = %$calls{$gene}->{$tool};
-			push(@elements, join(",",@$c)) ; 
+			if ( (scalar @$c) > 0) {
+				push(@elements, join(",",@$c)) ; 
+			} else {
+				push(@elements, "");
+			}
 		}
 
 		push(@data,\@elements);
