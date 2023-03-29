@@ -1,8 +1,10 @@
 process OPTITYPE_FILTER {
 
+    container 'quay.io/biocontainers/optitype:1.3.5--hdfd78af_1'
+
 	tag "${meta.patient_id}|${meta.sample_id}"
 
-	label 'optitype'
+	label 'medium_parallel'
 
 	scratch true
 

@@ -27,6 +27,7 @@ WorkflowHla.initialise( params, log)
 
 params.fasta = file(params.genomes[ "hg38" ].fasta, checkIfExists: true)
 params.dict = file(params.genomes[ "hg38" ].dict, checkIfExists: true)
+params.fai = file(params.genomes[ "hg38" ].fasta + ".fai", checkIfExists: true)
 
 include { HLA } from './workflows/hla'
 

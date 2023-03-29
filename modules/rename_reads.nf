@@ -1,5 +1,7 @@
 process RENAME_READS {
 
+    tag "${meta.sample_id}"
+
     publishDir "${params.outdir}/00GenDX", mode: 'copy'
     
     input:

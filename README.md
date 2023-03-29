@@ -2,7 +2,15 @@
 
 # IKMB HLA pipeline
 
-This pipeline performs HLA typing from short read NGS data. 
+This pipeline performs HLA typing from short read NGS data. Several tools are supported:
+
+* [xHLA](https://github.com/humanlongevity/HLA) (xhla)
+* [Hisat-genotype](https://daehwankimlab.github.io/hisat-genotype/) (hisat)   Slow on anything other than targetted sequencing!
+* [Optitype](https://github.com/FRED-2/OptiType) (optitype)
+* [HLAscan](https://github.com/SyntekabioTools/HLAscan) (hlascan)
+* [HLA-HD](https://www.genome.med.kyoto-u.ac.jp/HLA-HD/) (hlahd)
+
+For usage instructions, please see below. 
 
 ## Documentation 
 

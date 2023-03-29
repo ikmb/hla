@@ -248,7 +248,7 @@ alleles.keys.sort.each do |k|
 	r = [ k ]
 	this_result = [ k ]
 	rheader[1..-1].each do |h|
-		this_result << alleles[k][h].sort.join("\n")
+		this_result << alleles[k][h].sort.map {|a| a.split("*")[-1]}.join("\n")
 	end
 	results << this_result
 end

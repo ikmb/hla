@@ -1,5 +1,7 @@
 process CONCAT_FASTQ {
 
+    tag "${meta.sample_id}"
+
     //publishDir "${params.outdir}/GenDX", mode: 'copy'
     
     input:

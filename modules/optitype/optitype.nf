@@ -1,25 +1,32 @@
 process OPTITYPE_RUN {
 
-	tag "${meta.patient_id}|${meta.sample_id}"
+    container 'quay.io/biocontainers/optitype:1.3.5--hdfd78af_1'
 
-	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/optitype", mode: 'copy'
+    tag "${meta.patient_id}|${meta.sample_id}"
 
-	label 'optitype'
+    publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/optitype", mode: 'copy'
 
-	input:
-	tuple val(meta),path(left),path(right)
+    label 'medium_parallel'
 
-	output:
-	tuple val(meta),path(tsv), emit: tsv
+    input:
+    tuple val(meta),path(left),path(right)
 
-	script:
-	results = "optitype_out"
-	tsv = "${meta.patient_id}_${meta.sample_id}-optitype.tsv"
-	"""
-		cp ${baseDir}/assets/optitype/config.ini .
-		OptiTypePipeline.py -i $left $right --dna -e 3 -c config.ini --outdir $results
-		cp optitype_out/*/*.tsv $tsv
-	"""
+    output:
+    tuple val(meta),path(tsv), emit: tsv
+	path("versions.yml"), emit: versions
 
+    script:
+    results = "optitype_out"
+    tsv = "${meta.patient_id}_${meta.sample_id}-optitype.tsv"
 
+    """
+    cp ${baseDir}/assets/optitype/config.ini .
+    OptiTypePipeline.py -i $left $right --dna -e 3 -c config.ini --outdir $results
+    cp optitype_out/*/*.tsv $tsv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        optitype: \$(cat \$(which OptiTypePipeline.py) | grep -e "Version:" | sed -e "s/Version: //g")
+    END_VERSIONS
+    """
 }
