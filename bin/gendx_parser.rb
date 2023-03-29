@@ -113,7 +113,7 @@ abort "Could not find HLA calls in the PDF (format changed?!)" if results.keys.e
 
 # FIND MATCHING JSON FILE
 json = jsons.find{|j| j.include?(sample) }
-abort "Could not find matching json file (#{sample}) under provided path!"
+abort "Could not find matching json file (#{sample}) under the path provided!"
 
 # Build a HASH per gene, for each calling approach - starting with GenDX
 if json
@@ -212,6 +212,13 @@ if json
 				# Try to sanitize hisat outputs and reduce to minimum set of alleles
 				if tool == "Hisat"
 					tcalls = hisat_reconcile(tcalls)
+				end
+			
+				tcalls = tcalls.select {|tc| tc.length > 1 }
+
+				# if only one call exists, we assume it is homozygous and we double it. 
+				if tcalls.length == 1
+					tcalls << tcalls[0]
 				end
 
 				tcalls.sort[0..1].each_with_index do |t,i|

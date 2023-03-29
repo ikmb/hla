@@ -1,22 +1,30 @@
-process BEDCOV {
+process SAMTOOLS_BEDCOV {
 
-        tag "${meta.patient_id}|${meta.sample_id}"
+    label 'short_serial'
 
-        publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/", mode: 'copy'
+    tag "${meta.patient_id}|${meta.sample_id}"
 
-        input:
-        tuple val(meta),path(bam),path(bai)
-	path(bed)
+    publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/", mode: 'copy'
 
-        output:
-        tuple val(meta), path(report), emit: report
+    input:
+    tuple val(meta),path(bam),path(bai)
+    path(bed)
 
-        script:
-        def prefix = "${meta.patient_id}_${meta.sample_id}.dedup"
-	report = prefix + ".bedcov.txt"
+    output:
+    tuple val(meta), path(report), emit: report
+    path("versions.yml"), emit: versions
+    
+    script:
+    def prefix = "${meta.patient_id}_${meta.sample_id}.dedup"
+    report = prefix + ".bedcov.txt"
 
-        """
-		samtools bedcov -Q 1 $bed $bam > $report
-        """
+    """
+    samtools bedcov -Q 1 $bed $bam > $report
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    END_VERSIONS
+    """
 
 }
