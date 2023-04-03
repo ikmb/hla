@@ -1,12 +1,11 @@
 # You can use this file to create a conda environment for this pipeline:
 #   conda env create -f environment.yml
-name: hla-1.0
+name: hla-1.2
 channels:
   - defaults
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::fastp=0.23.2
   - python=3.9
   - bioconda::samtools=1.16
   - bioconda::bwa=0.7.17

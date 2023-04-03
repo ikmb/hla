@@ -22,7 +22,7 @@ process HISAT_GENOTYPE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        hisatgenotype: \$( hisatgenotype -h | grep "HISAT-Genotype" | sed -e 's/HISAT-Genotype //' | -e sed 's/ .*//' )
+        hisatgenotype: \$(echo \$(hisatgenotype -h 2>&1) | grep HISAT-Genotype | sed 's/^HISAT-Genotype //' | sed 's/ .* //')
     END_VERSIONS
     
     """
