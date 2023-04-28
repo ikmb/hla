@@ -104,7 +104,7 @@ workflow HLA {
 
 	if ( 'hlahd' in tools ) {
 		HLAHD(
-			TRIM_AND_ALIGN.out.reads.map { m,b,i ->
+			MERGE_READS.out.reads.map { m,b,i ->
 				[[
 					patient_id: m.patient_id,
 					sample_id: m.sample_id

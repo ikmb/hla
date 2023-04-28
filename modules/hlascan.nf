@@ -1,6 +1,6 @@
 process HLASCAN {
 
-	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}", mode: 'copy'
+	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/HLAscan", mode: 'copy'
 
 	label 'medium_parallel'
 	
