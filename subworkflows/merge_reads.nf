@@ -21,7 +21,8 @@ workflow MERGE_READS {
         )
 
     emit:
-    reads = RENAME_READS.out.reads
+    reads = CONCAT_FASTQ.out.reads
+    renamed_reads = RENAME_READS.out.reads
 
 
 }
