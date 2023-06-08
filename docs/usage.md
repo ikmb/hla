@@ -19,7 +19,7 @@ nextflow run ikmb/hla --samples Samples.csv --tools 'xhla,hisat,optitype' -profi
 This pipeline accepts input data in CSV format. The format should look as follows:
 
 ```
-patientID;sampleID;libraryID;rgID;R1;R2
+patient;sample;library;rgid;R1;R2
 PatientA;Sample1;22Oct21_S3;C41232CXX.1.22Oct21_S3;/path/to/R1.fastq.gz;/path/to/R2.fastq.gz
 ```
 
