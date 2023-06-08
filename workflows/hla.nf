@@ -19,10 +19,10 @@ if (params.samples) {
         .splitCsv(sep: ';', header: true)
         .map { row ->
             def meta = [:]
-            meta.patient_id = row.patientID
-            meta.sample_id = row.sampleID
-            meta.library_id = row.libraryID
-            meta.readgroup_id = row.rgID
+            meta.patient_id = row.patient
+            meta.sample_id = row.sample
+            meta.library_id = row.library
+            meta.readgroup_id = row.rgid
             left = returnFile( row.R1 )
             right = returnFile( row.R2)
             [ meta, left, right ]

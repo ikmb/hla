@@ -74,7 +74,7 @@ warn "Performing sanity check on md5sums" if options.sanity
 
 options.platform ? sequencer = options.platform : sequencer = "NovaSeq6000"
 
-puts "patientID;sampleID;libraryID;rgID;R1;R2"
+puts "patient;sample;library;rgid;R1;R2"
 
 individuals = []
 samples = []
