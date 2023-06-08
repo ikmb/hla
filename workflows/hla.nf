@@ -18,10 +18,10 @@ if (params.samples) {
     Channel.from(file(params.samples, checkIfExists: true))
         .splitCsv(sep: ';', header: true)
         .map { row ->
-			def meta = [:]
+            def meta = [:]
             meta.patient_id = row.patientID
             meta.sample_id = row.sampleID
-			meta.library_id = row.libraryID
+            meta.library_id = row.libraryID
             meta.readgroup_id = row.rgID
             left = returnFile( row.R1 )
             right = returnFile( row.R2)
@@ -31,11 +31,11 @@ if (params.samples) {
         Channel.fromFilePairs(params.folder + "/*_L0*_R{1,2}_001.fastq.gz", flat: true)
         .ifEmpty { exit 1, "Did not find any reads matching your input pattern..." }
         .map { triple ->
-			def meta = [:]
-			meta.patient_id = triple[0].split("_")[0]
-			meta.sample_id = triple[0].split("_")[1..-1].join("_").split("_L0")[0]
-			meta.readgroup_id = triple[0].split("_L0")[0]
-			meta.library_id = triple[0].split("_")[1..-1].join("_").split("_L0")[0]
+            def meta = [:]
+            meta.patient_id = triple[0].split("_")[0]
+            meta.sample_id = triple[0].split("_")[1..-1].join("_").split("_L0")[0]
+            meta.readgroup_id = triple[0].split("_L0")[0]
+            meta.library_id = triple[0].split("_")[1..-1].join("_").split("_L0")[0]
             tuple( meta,triple[1],triple[2])
         }
         .set { reads_fastp }
@@ -43,7 +43,7 @@ if (params.samples) {
         Channel.fromFilePairs(params.reads, flat: true)
         .ifEmpty { exit 1, "Did not find any reads matching your input pattern..." }
         .map { triple ->
-			def meta = [:]
+            def meta = [:]
             meta.patient_id = triple[0].split("_")[0]
             meta.sample_id = triple[0].split("_")[1..-1].join("_").split("_L0")[0]
             meta.readgroup_id = triple[0].split("_L0")[0]
@@ -72,104 +72,104 @@ multiqc_files = Channel.from([])
 // Workflow
 workflow HLA {
 
-	main:
+    main:
 
-	// Align reads to chromosome 6
-	TRIM_AND_ALIGN(
-		reads_fastp,
-		ch_bed,
-		genome_index,
-		ch_fasta
-	)
-	
-	ch_versions = ch_versions.mix(TRIM_AND_ALIGN.out.versions)
+    // Align reads to chromosome 6
+    TRIM_AND_ALIGN(
+        reads_fastp,
+        ch_bed,
+        genome_index,
+        ch_fasta
+    )
+    
+    ch_versions = ch_versions.mix(TRIM_AND_ALIGN.out.versions)
 
-	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.qc)
-	ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.bedcov.map { m,r -> r } )
+    ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.qc)
+    ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.bedcov.map { m,r -> r } )
 
-	MERGE_READS(
-		TRIM_AND_ALIGN.out.reads
-	)
-
-	if ( 'hisat' in tools ) {
-		HISAT_TYPING(
-			TRIM_AND_ALIGN.out.reads,
-			params.hla_genes.join(",")
-		)
-		
-		ch_reports 	= ch_reports.mix(HISAT_TYPING.out.report)
-		ch_versions = ch_versions.mix(HISAT_TYPING.out.versions)
-
-	}
-
-	if ( 'hlahd' in tools ) {
-		HLAHD(
-			MERGE_READS.out.reads.map { m,b,i ->
-				[[
-					patient_id: m.patient_id,
-					sample_id: m.sample_id
-				],b,i]
-			}
-		)
-
-		ch_reports 	= ch_reports.mix(HLAHD.out.report)
-		ch_versions = ch_versions.mix(HLAHD.out.versions)
-
-	}
-
-	if ('xhla' in tools) {
-		XHLA_TYPING(
-			TRIM_AND_ALIGN.out.bam
-		)
-
-		ch_reports 	= ch_reports.mix(XHLA_TYPING.out.report)
-
-	}
-
-	if ( 'hlascan' in tools) {
-		// mix the hlscan-only genes in and make the list unique, just in case
-		ch_genes_hlascan = ch_genes.mix(ch_hlascan_genes).unique()
-		HLASCAN(
-			TRIM_AND_ALIGN.out.bam.combine(ch_genes_hlascan)
-		)
-		
-		ch_reports 	= ch_reports.mix(HLASCAN.out.report)
-		ch_versions = ch_versions.mix(HLASCAN.out.versions)
-
-	}
-
-	if ('optitype' in tools) {
-		OPTITYPE(
-			TRIM_AND_ALIGN.out.reads
-		)
-
-		ch_reports 	= ch_reports.mix(OPTITYPE.out.report)
-		ch_versions = ch_versions.mix(OPTITYPE.out.versions)
-
-	}
-
-	CUSTOM_DUMPSOFTWAREVERSIONS(
-		ch_versions.unique().collectFile(name: 'collated_versions.yml')
-	)
-
-	REPORT(
-		ch_reports.groupTuple()
-	)
-
-	JSON2XLS(
-		REPORT.out.json.map {m,j ->j }.collect()
-	)
-	
-	multiqc_files = multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml)
-	multiqc_files = multiqc_files.mix(ch_qc)
-
-    MULTIQC(
-		multiqc_files.collect()
+    MERGE_READS(
+        TRIM_AND_ALIGN.out.reads
     )
 
-	emit:
-	qc = MULTIQC.out.report
-	
+    if ( 'hisat' in tools ) {
+        HISAT_TYPING(
+            TRIM_AND_ALIGN.out.reads,
+            params.hla_genes.join(",")
+        )
+        
+        ch_reports     = ch_reports.mix(HISAT_TYPING.out.report)
+        ch_versions = ch_versions.mix(HISAT_TYPING.out.versions)
+
+    }
+
+    if ( 'hlahd' in tools ) {
+        HLAHD(
+            MERGE_READS.out.reads.map { m,b,i ->
+                [[
+                    patient_id: m.patient_id,
+                    sample_id: m.sample_id
+                ],b,i]
+            }
+        )
+
+        ch_reports     = ch_reports.mix(HLAHD.out.report)
+        ch_versions = ch_versions.mix(HLAHD.out.versions)
+
+    }
+
+    if ('xhla' in tools) {
+        XHLA_TYPING(
+            TRIM_AND_ALIGN.out.bam
+        )
+
+        ch_reports     = ch_reports.mix(XHLA_TYPING.out.report)
+
+    }
+
+    if ( 'hlascan' in tools) {
+        // mix the hlscan-only genes in and make the list unique, just in case
+        ch_genes_hlascan = ch_genes.mix(ch_hlascan_genes).unique()
+        HLASCAN(
+            TRIM_AND_ALIGN.out.bam.combine(ch_genes_hlascan)
+        )
+        
+        ch_reports  = ch_reports.mix(HLASCAN.out.report)
+        ch_versions = ch_versions.mix(HLASCAN.out.versions)
+
+    }
+
+    if ('optitype' in tools) {
+        OPTITYPE(
+            TRIM_AND_ALIGN.out.reads
+        )
+
+        ch_reports  = ch_reports.mix(OPTITYPE.out.report)
+        ch_versions = ch_versions.mix(OPTITYPE.out.versions)
+
+    }
+
+    CUSTOM_DUMPSOFTWAREVERSIONS(
+        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+    )
+
+    REPORT(
+        ch_reports.groupTuple()
+    )
+
+    JSON2XLS(
+        REPORT.out.json.map {m,j ->j }.collect()
+    )
+    
+    multiqc_files = multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml)
+    multiqc_files = multiqc_files.mix(ch_qc)
+
+    MULTIQC(
+        multiqc_files.collect()
+    )
+
+    emit:
+    qc = MULTIQC.out.report
+    
 }
 
 

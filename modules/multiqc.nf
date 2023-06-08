@@ -14,7 +14,7 @@ process  MULTIQC {
 
    """
       multiqc . 
-   """	
+   """    
 
 }
 

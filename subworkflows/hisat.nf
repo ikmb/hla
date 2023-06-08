@@ -26,12 +26,12 @@ workflow HISAT_TYPING {
     FASTQ_MERGE(
         reads_to_merge.multiple
     )
-	
+    
     HISAT_GENOTYPE(
         reads_to_merge.single.mix(FASTQ_MERGE.out.reads),
         genes.collect()
     )
-	
+    
     ch_versions = ch_versions.mix(HISAT_GENOTYPE.out.versions)
 
     HISAT_REPORT(

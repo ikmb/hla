@@ -18,12 +18,12 @@ With this information in place, you will next have to create an new site-specifi
 ```
 
 profiles {
-	
-	your_profile {
-		includeConfig 'conf/base.config'
-		includeConfig 'conf/your_cluster.config'
-		includeConfig 'conf/resources.config'
-	}
+    
+    your_profile {
+        includeConfig 'conf/base.config'
+        includeConfig 'conf/your_cluster.config'
+        includeConfig 'conf/resources.config'
+    }
 }
 
 ```

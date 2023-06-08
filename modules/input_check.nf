@@ -20,7 +20,7 @@ workflow INPUT_CHECK {
 def create_fastq_channel(LinkedHashMap row) {
     def meta = [:]
     meta.sample_id           = row.sampleID
-    meta.patient_id 	     = row.patientID
+    meta.patient_id          = row.patientID
     meta.library_id          = row.libraryID
     meta.readgroup_id        = row.rgID
 
