@@ -7,12 +7,12 @@ require 'ostruct'
 
 def get_library_info(id)
 
-	answer = rest_get("library/info/#{id}")
-	return answer
+    answer = rest_get("library/info/#{id}")
+    return answer
 end
 
 def rest_get(url)
-	
+    
     $request_counter ||= 0   # Initialise if unset  
     $last_request_time ||= 0 # Initialise if unset
 
@@ -82,51 +82,51 @@ samples = []
 # group = the library id, may be split across lanes
 groups.each do |group, files|
 
-	warn "...processing library #{group}"
+    warn "...processing library #{group}"
 
-	linfo = get_library_info(group)
+    linfo = get_library_info(group)
 
-	war linfo.inspect
+    war linfo.inspect
 
-	pairs = files.group_by{|f| f.split("/")[-1].split(/_R[1,2]/)[0] }
+    pairs = files.group_by{|f| f.split("/")[-1].split(/_R[1,2]/)[0] }
 
-	pairs.each do |p,reads|
+    pairs.each do |p,reads|
 
-        	left,right = reads.sort.collect{|f| File.absolute_path(f)}
-	
-		abort "This sample seems to not be a set of PE files! #{p}" unless left && right
+            left,right = reads.sort.collect{|f| File.absolute_path(f)}
+    
+        abort "This sample seems to not be a set of PE files! #{p}" unless left && right
 
-		if options.sanity
-			Dir.chdir(options.folder) {
-				[left,right].each do |fastq|
-					fastq_simple = fastq.split("/")[-1].strip
-					raise "Aborting - no md5sum found for fastq file #{fastq}" unless File.exists?(fastq_simple + ".md5")
-					status = `md5sum -c #{fastq_simple}.md5`
-					raise "Aborting - failed md5sum check for #{fastq}" unless status.strip.include?("OK")
-				end
-			}
-		end
+        if options.sanity
+            Dir.chdir(options.folder) {
+                [left,right].each do |fastq|
+                    fastq_simple = fastq.split("/")[-1].strip
+                    raise "Aborting - no md5sum found for fastq file #{fastq}" unless File.exists?(fastq_simple + ".md5")
+                    status = `md5sum -c #{fastq_simple}.md5`
+                    raise "Aborting - failed md5sum check for #{fastq}" unless status.strip.include?("OK")
+                end
+            }
+        end
 
-		# 221200000285-DS9_22Dez285-DL009_S9_L001_R2_001.fastq.gz
-        	library = group.split("_")[1]
-        	sample = group.split("_")[1]
-		individual = group.split("_")[1]
+        # 221200000285-DS9_22Dez285-DL009_S9_L001_R2_001.fastq.gz
+            library = group.split("_")[1]
+            sample = group.split("_")[1]
+        individual = group.split("_")[1]
 
-		individuals << individual
-		samples << sample
+        individuals << individual
+        samples << sample
 
-        	e = `zcat #{left} | head -n1 `
-		header = e
+            e = `zcat #{left} | head -n1 `
+        header = e
 
-        	instrument,run_id,flowcell_id,lane,tile,x,y = header.split(" ")[0].split(":")
+            instrument,run_id,flowcell_id,lane,tile,x,y = header.split(" ")[0].split(":")
 
-		index = header.split(" ")[-1].split(":")[-1]
-        	readgroup = flowcell_id + "." + lane + "." + library 
+        index = header.split(" ")[-1].split(":")[-1]
+            readgroup = flowcell_id + "." + lane + "." + library 
 
-        	pgu = flowcell_id + "." + lane + "." + index
+            pgu = flowcell_id + "." + lane + "." + index
 
-        	puts "I_#{individual};S_#{sample};#{library};#{readgroup};#{left};#{right}"
-	end
+            puts "I_#{individual};S_#{sample};#{library};#{readgroup};#{left};#{right}"
+    end
 end
 
 

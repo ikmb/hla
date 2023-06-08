@@ -10,11 +10,11 @@ perl ensembl_get_utr.pl
     [--help]
 
   Input data
-	[--list filename]
-	The list of gene names to get BED coordinates for
+    [--list filename]
+    The list of gene names to get BED coordinates for
 
-	[--assembly name]
-	Name of the genome assembly to use (GRCH37, hg19, GRCh38)	
+    [--assembly name]
+    Name of the genome assembly to use (GRCH37, hg19, GRCh38)    
 
   Ouput:
     [--output_file filename]
@@ -45,14 +45,14 @@ my $options = 3306;
 my $prefix = "chr";
 
 if ($assembly eq "GRCh37" or $assembly eq "hg19") {
-	$options = 3337;
+    $options = 3337;
 } elsif ($assembly eq "GRCh38") {
-	# do nothing
+    # do nothing
 } else {
-	exit 1, "Unknown assembly version provided should be one of: hg19, GRCh37 or GRCh38 (default).\n";
+    exit 1, "Unknown assembly version provided should be one of: hg19, GRCh37 or GRCh38 (default).\n";
 }
 if ($assembly eq "GRCh37") {
-	$prefix = "";
+    $prefix = "";
 }
 
 my $registry = 'Bio::EnsEMBL::Registry';
@@ -69,43 +69,43 @@ $fh->open( $list);
 
 foreach $line (<$fh>) {
 
-	chomp($line);
+    chomp($line);
 
-	# Some genes may have different canonical names in different assemblies	
-	my @genes = (split ",", $line);
-	my $skip = 0;
+    # Some genes may have different canonical names in different assemblies    
+    my @genes = (split ",", $line);
+    my $skip = 0;
 
-	foreach my $gene_name (@genes) {
+    foreach my $gene_name (@genes) {
 
-		printf STDERR "Searching for $gene_name ...\n";
+        printf STDERR "Searching for $gene_name ...\n";
 
-		next if ($skip == 1);
+        next if ($skip == 1);
 
-		# Theoretically, one HGNC can map to multiple Genes
-		my $gene = $gene_adaptor->fetch_by_display_label($gene_name);
+        # Theoretically, one HGNC can map to multiple Genes
+        my $gene = $gene_adaptor->fetch_by_display_label($gene_name);
 
-		next if (!$gene);
+        next if (!$gene);
 
-		# We have a found a match, don't need to check the alternative names, if any
-		$skip = 1;
+        # We have a found a match, don't need to check the alternative names, if any
+        $skip = 1;
 
-		my $transcript = $gene->canonical_transcript;
+        my $transcript = $gene->canonical_transcript;
 
-		my @exons = @{ $transcript->get_all_translateable_Exons() } ;
-		foreach my $exon (@exons) {
-			next if (!$exon->is_coding($transcript) ) ;
-			my $ref_start = $exon->coding_region_start($transcript);
-			my $ref_end = $exon->coding_region_end($transcript);
-			if ($ref_start > $ref_end) {
-				($ref_start,$ref_end) = ($ref_end,$ref_start);
-			}
-			my $strand = $exon->strand == 1 ? "+" : "-" ;
-			printf $prefix . $gene->seq_region_name . "\t" . $ref_start . "\t" . $ref_end . "\t" . $line . "." . $transcript->stable_id . "."  . $exon->rank($transcript) . "\t" . 100 . "\t" . $strand . "\n";
-		}
-	}
+        my @exons = @{ $transcript->get_all_translateable_Exons() } ;
+        foreach my $exon (@exons) {
+            next if (!$exon->is_coding($transcript) ) ;
+            my $ref_start = $exon->coding_region_start($transcript);
+            my $ref_end = $exon->coding_region_end($transcript);
+            if ($ref_start > $ref_end) {
+                ($ref_start,$ref_end) = ($ref_end,$ref_start);
+            }
+            my $strand = $exon->strand == 1 ? "+" : "-" ;
+            printf $prefix . $gene->seq_region_name . "\t" . $ref_start . "\t" . $ref_end . "\t" . $line . "." . $transcript->stable_id . "."  . $exon->rank($transcript) . "\t" . 100 . "\t" . $strand . "\n";
+        }
+    }
 
-	die "Gene not found " . $line . "\n" if ($skip == 0);
-		
+    die "Gene not found " . $line . "\n" if ($skip == 0);
+        
 }
 close ($fh);
 

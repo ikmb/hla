@@ -1,21 +1,21 @@
 process HISAT_REPORT {
 
-	tag "${meta.patient_id}|${meta.sample_id}"
+    tag "${meta.patient_id}|${meta.sample_id}"
 
-	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}", mode: 'copy'
+    publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}", mode: 'copy'
 
-	input:
-	tuple val(meta),path(result)
+    input:
+    tuple val(meta),path(result)
 
-	output:
-	tuple val(meta),path(report), emit: tsv
+    output:
+    tuple val(meta),path(report), emit: tsv
 
-	script:
+    script:
 
-	report = "${meta.patient_id}_${meta.sample_id}.hisat.tsv"
+    report = "${meta.patient_id}_${meta.sample_id}.hisat.tsv"
 
-	"""
-		hisatgenotype_toolkit parse-results --csv --in-dir $result --output-file $report
-	"""
+    """
+        hisatgenotype_toolkit parse-results --csv --in-dir $result --output-file $report
+    """
 
 }

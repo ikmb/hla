@@ -1,22 +1,22 @@
 process BAM2FASTQ {
 
-	scratch true 
+    scratch true 
 
-	tag "${meta.patient_id}|${meta.sample_id}"
+    tag "${meta.patient_id}|${meta.sample_id}"
 
-	input:
-	tuple val(meta),path(bam),path(bai)
+    input:
+    tuple val(meta),path(bam),path(bai)
 
-	output:
-	tuple val(meta),path(left),path(right), emit: reads
+    output:
+    tuple val(meta),path(left),path(right), emit: reads
 
-	script:
+    script:
 
-	left = bam.getBaseName() + "-extracted_R1_001.fastq.gz"
-	right = bam.getBaseName() + "-extracted_R2_001.fastq.gz"
+    left = bam.getBaseName() + "-extracted_R1_001.fastq.gz"
+    right = bam.getBaseName() + "-extracted_R2_001.fastq.gz"
 
-	"""
-		samtools sort -m 1G -n -@ ${task.cpus} -O BAM $bam - | samtools fastq -1 $left -2 $right -@ ${task.cpus} -
-	"""
+    """
+        samtools sort -m 1G -n -@ ${task.cpus} -O BAM $bam - | samtools fastq -1 $left -2 $right -@ ${task.cpus} -
+    """
 
 }

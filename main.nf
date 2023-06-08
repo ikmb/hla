@@ -36,23 +36,23 @@ multiqc_report = Channel.from([])
 log.info "------------------------------------------"
 log.info "IKMB HLA Pipeline"
 log.info "------------------------------------------"
-log.info "${workflow.manifest.description}		v${params.version}"
-log.info "Nextflow Version:						$workflow.nextflow.version"
-log.info "Tools requested:						${params.tools}"
-log.info "Genes to analyse:						${params.hla_genes.join(',')}"
+log.info "${workflow.manifest.description}        v${params.version}"
+log.info "Nextflow Version:                        $workflow.nextflow.version"
+log.info "Tools requested:                        ${params.tools}"
+log.info "Genes to analyse:                        ${params.hla_genes.join(',')}"
 log.info "------------------------------------------"
 
 workflow {
 
-	HLA()
+    HLA()
 
-	multiqc_report = multiqc_report.mix(HLA.out.qc)
+    multiqc_report = multiqc_report.mix(HLA.out.qc)
 
 }
 
 workflow.onComplete {
   log.info "========================================="
-  log.info "Duration:		$workflow.duration"
+  log.info "Duration:        $workflow.duration"
   log.info "========================================="
 
   def email_fields = [:]
@@ -78,7 +78,7 @@ workflow.onComplete {
 
   email_info = ""
   for (s in email_fields) {
-	email_info += "\n${s.key}: ${s.value}"
+    email_info += "\n${s.key}: ${s.value}"
   }
 
   def output_d = new File( "${params.outdir}/pipeline_info/" )
@@ -87,7 +87,7 @@ workflow.onComplete {
   }
 
   def output_tf = new File( output_d, "pipeline_report.txt" )
-  output_tf.withWriter { w -> w << email_info }	
+  output_tf.withWriter { w -> w << email_info }    
 
  // make txt template
   def engine = new groovy.text.GStringTemplateEngine()
@@ -105,25 +105,25 @@ workflow.onComplete {
 
   if (params.email) {
 
-  	def mqc_report = null
-  	try {
-        	if (workflow.success && !params.skip_multiqc) {
-            		mqc_report = multiqc_report.getVal()
-            		if (mqc_report.getClass() == ArrayList){
-                		log.warn "[Pipeline] Found multiple reports from process 'multiqc', will use only one"
-                		mqc_report = mqc_report[0]
-                	}
-        	}
-    	} catch (all) {
-        	log.warn "[IKMB HLA] Could not attach MultiQC report to summary email"
-  	}
+      def mqc_report = null
+      try {
+            if (workflow.success && !params.skip_multiqc) {
+                    mqc_report = multiqc_report.getVal()
+                    if (mqc_report.getClass() == ArrayList){
+                        log.warn "[Pipeline] Found multiple reports from process 'multiqc', will use only one"
+                        mqc_report = mqc_report[0]
+                    }
+            }
+        } catch (all) {
+            log.warn "[IKMB HLA] Could not attach MultiQC report to summary email"
+      }
 
-	def smail_fields = [ email: params.email, subject: subject, email_txt: email_txt, email_html: email_html, baseDir: "$baseDir", mqcFile: mqc_report, mqcMaxSize: params.maxMultiqcEmailFileSize.toBytes() ]
-	def sf = new File("$baseDir/assets/sendmail_template.txt")	
-    	def sendmail_template = engine.createTemplate(sf).make(smail_fields)
-    	def sendmail_html = sendmail_template.toString()
+    def smail_fields = [ email: params.email, subject: subject, email_txt: email_txt, email_html: email_html, baseDir: "$baseDir", mqcFile: mqc_report, mqcMaxSize: params.maxMultiqcEmailFileSize.toBytes() ]
+    def sf = new File("$baseDir/assets/sendmail_template.txt")    
+        def sendmail_template = engine.createTemplate(sf).make(smail_fields)
+        def sendmail_html = sendmail_template.toString()
 
-	try {
+    try {
           if( params.plaintext_email ){ throw GroovyException('Send plaintext e-mail, not HTML') }
           // Try to send HTML e-mail using sendmail
           [ 'sendmail', '-t' ].execute() << sendmail_html

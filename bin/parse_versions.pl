@@ -51,47 +51,47 @@ my $tool = undef;
 
 while (my $file = readdir(DIR)) {
 
-	next unless ($file =~ /^v_.*\.txt$/);
-	open (my $IN, '<', $file) or die "FATAL: Can't open file: $file for reading.\n$!\n";
-	
-	chomp(my @lines = <$IN>);	
-	
-	if ($file =~ /v_gatk.*/) {
-		my $line = @lines[0];
-		$tool = "GATK4" ;
-		$version = (split " ", $line)[-1];
-		
-	} elsif ($file =~ /^v_nextflow\.txt$/ )  {
-		my $line = @lines[0];
-		$tool = "Nextflow";
-		$version = $line;
-	} elsif ($file =~ /^v_ikmb_exoseq\.txt$/) {
-		my $line = @lines[0];
+    next unless ($file =~ /^v_.*\.txt$/);
+    open (my $IN, '<', $file) or die "FATAL: Can't open file: $file for reading.\n$!\n";
+    
+    chomp(my @lines = <$IN>);    
+    
+    if ($file =~ /v_gatk.*/) {
+        my $line = @lines[0];
+        $tool = "GATK4" ;
+        $version = (split " ", $line)[-1];
+        
+    } elsif ($file =~ /^v_nextflow\.txt$/ )  {
+        my $line = @lines[0];
+        $tool = "Nextflow";
+        $version = $line;
+    } elsif ($file =~ /^v_ikmb_exoseq\.txt$/) {
+        my $line = @lines[0];
                 $tool = "Exome Pipeline";
-		$version = $line;
-	} elsif ($file =~ /^v_picard\.txt/) {
-		my $line = @lines[0];
+        $version = $line;
+    } elsif ($file =~ /^v_picard\.txt/) {
+        my $line = @lines[0];
                 $tool = "Picard";
                 $version = (split " ", $line)[-1];
-	} elsif ($file =~ /^v_bwa\.txt/) {
-		my $line = @lines[2];
+    } elsif ($file =~ /^v_bwa\.txt/) {
+        my $line = @lines[2];
                 $tool = "BWA";
                 $version = (split " ", $line)[-1];
-	} else {
-		my $line = @lines[0];
-		my @elements = (split " ",$line);
-		$tool = @elements[0];
-		$tool =~ s/\,//;
-		$version = @elements[-1];
-	}
-	
-	#my $entry = qq(
-	my $entry = "<dt>$tool</dt><dd><samp>$version</samp></dd>" ;
-	#);
-	printf "    $entry\n";
-	
-	close($IN);
-	
+    } else {
+        my $line = @lines[0];
+        my @elements = (split " ",$line);
+        $tool = @elements[0];
+        $tool =~ s/\,//;
+        $version = @elements[-1];
+    }
+    
+    #my $entry = qq(
+    my $entry = "<dt>$tool</dt><dd><samp>$version</samp></dd>" ;
+    #);
+    printf "    $entry\n";
+    
+    close($IN);
+    
 }
 
 close(DIR);

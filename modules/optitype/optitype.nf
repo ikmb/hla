@@ -13,7 +13,7 @@ process OPTITYPE_RUN {
 
     output:
     tuple val(meta),path(tsv), emit: tsv
-	path("versions.yml"), emit: versions
+    path("versions.yml"), emit: versions
 
     script:
     results = "optitype_out"
