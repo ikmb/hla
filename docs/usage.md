@@ -76,6 +76,10 @@ Please note: HLA-HD cannot be containerized due to licensing restrictions. It ca
 
 Provide a descriptive name for this analysis run. 
 
+### `--precision` [ default = 2]
+
+Desired precision of the reported HLA calls. Default is '2' (HLA-A:01:01).
+
 ## Testing the pipeline
 
 This pipeline has a built-in test. To run it, simply provide the appropriate profile and test config. On MedCluster, this would look like so:

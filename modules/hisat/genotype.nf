@@ -15,10 +15,10 @@ process HISAT_GENOTYPE {
     path("versions.yml"), emit: versions
     
     script:
-    def genes = params.hla_genes.join(",")
+    def gene_list = params.hla_genes.join(",")
 
     """
-    hisatgenotype --index_dir ${params.hisat_genome_index} --base hla -p ${task.cpus}  --locus-list $genes -1 $left -2 $right 
+    hisatgenotype --index_dir ${params.hisat_genome_index} --base hla -p ${task.cpus}  --locus-list $gene_list -1 $left -2 $right 
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

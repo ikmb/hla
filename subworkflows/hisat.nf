@@ -35,7 +35,8 @@ workflow HISAT_TYPING {
     ch_versions = ch_versions.mix(HISAT_GENOTYPE.out.versions)
 
     HISAT_REPORT(
-        HISAT_GENOTYPE.out.results
+        HISAT_GENOTYPE.out.results,
+        params.precision
     )
 
     emit:

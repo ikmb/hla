@@ -6,6 +6,7 @@ process HISAT_REPORT {
 
     input:
     tuple val(meta),path(result)
+    val(precision)
 
     output:
     tuple val(meta),path(report), emit: tsv
@@ -15,7 +16,7 @@ process HISAT_REPORT {
     report = "${meta.patient_id}_${meta.sample_id}.hisat.tsv"
 
     """
-        hisatgenotype_toolkit parse-results --csv --in-dir $result --output-file $report
+        hisatgenotype_toolkit parse-results --csv --in-dir $result --trim $precision --output-file $report
     """
 
 }

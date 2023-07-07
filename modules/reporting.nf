@@ -6,6 +6,7 @@ process REPORT {
 
     input:
     tuple val(meta),path(reports)
+    val(precision)
 
     output:
     tuple val(meta),path(pdf), emit: pdf
@@ -17,12 +18,14 @@ process REPORT {
     pdf = "${sample}.pdf"
     
     """
-        report.rb -s ${sample} -v ${workflow.manifest.version}
+        report.rb -s ${sample} -v ${workflow.manifest.version} -p $precision
     """
 
 }
 
 process JSON2XLS {
+
+    container 'ikmb/exome-seq:5.2'
 
     tag "All"
 
@@ -41,6 +44,6 @@ process JSON2XLS {
     xls = params.run_name + "-report.xlsx"
 
     """
-        json2xls.pl --outfile $xls
+        json2xls.rb --outfile $xls
     """
 }
