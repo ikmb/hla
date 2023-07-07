@@ -10,6 +10,18 @@ require 'optparse'
 require 'ostruct'
 
 ### Define modules and classes here
+def trim_allele(call,precision)
+
+    answer = nil
+    e = call.split(":")
+    if e.length > precision
+        answer = e[0..precision-1].join(":")
+    else 
+        answer = call
+    end
+
+    return answer
+end
 
 def hisat_reconcile(list)
     answer = []
@@ -46,6 +58,7 @@ opts = OptionParser.new()
 opts.banner = "A script description here"
 opts.separator ""
 opts.on("-p","--pdf", "=PDF","PDF report from GenDX") {|argument| options.pdf = argument }
+opts.on("-f","--precision", "=PRECISION","PPrecision of HLA comparison") {|argument| options.precision = argument }
 opts.on("-j","--jsons", "=JSONS","Folder containing JSON reports") {|argument| options.jsons = argument }
 opts.on("-o","--outfile", "=OUTFILE","Output file") {|argument| options.outfile = argument }
 opts.on("-h","--help","Display the usage information") {
@@ -54,6 +67,8 @@ opts.on("-h","--help","Display the usage information") {
 }
 
 opts.parse!
+
+options.precision ? precision = options.precision.to_i : precision = 2
 
 abort "Path to JSON files not found" unless File.directory?(options.jsons)
 
@@ -92,7 +107,7 @@ text.each do |line|
 
     gene,allele_a,allele_b,cwd_a,cwd_b,status = line.strip.split(/\s+/)
 
-    alleles = [ allele_a,allele_b]
+    alleles = [ trim_allele(allele_a,precision),trim_allele(allele_b,precision)]
 
     # Clean additional characters resulting from footnotes by removing a potential third integer in the last position
     alleles.each_with_index do |a,i|
@@ -142,7 +157,7 @@ if json
             l_calls.each do |tool,t_calls|
 
                 # sanitize call names
-                t_calls = t_calls.map {|tc| tc.split("*")[-1] }
+                t_calls = t_calls.map {|tc| trim_allele(tc.split("*")[-1],precision) }
                 bucket[gene][tool] = t_calls.sort
 
             end
@@ -170,6 +185,8 @@ if json
 
     col = 0
     row = 0
+
+    issues = false
 
     bucket.each do |gene,calls|
         
@@ -238,6 +255,8 @@ if json
                         mismatch = true
                     end
 
+                    issues = true if mismatch
+
                     # write the call for this tool
                     sheet.add_cell(row,col,t)
                     sheet.sheet_data[row][col].change_fill(color)
@@ -257,7 +276,8 @@ if json
         
     end # bucket
     
-        workbook.write("#{sample}.xlsx")
+    issues ? appendix = ".conflicts" : appendix = ""
+    workbook.write("#{sample}#{appendix}.xlsx")
 
 else
     warn "No matching JSON found!"

@@ -153,7 +153,8 @@ workflow HLA {
     )
 
     REPORT(
-        ch_reports.groupTuple()
+        ch_reports.groupTuple(),
+        params.precision
     )
 
     JSON2XLS(

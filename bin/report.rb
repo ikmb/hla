@@ -28,20 +28,40 @@ require 'date'
 
 ### Define modules and classes here
 
+def trim_allele(call,precision)
+
+    answer = nil
+  
+    call = call.split("*")[-1] if call.include?("*")
+
+    e = call.split(":")
+
+    if e.length > precision
+        answer = e[0..precision-1].join(":")
+    else 
+        answer = call
+    end
+
+    return answer
+end
+
 ### Get the script arguments and open relevant files
 options = OpenStruct.new()
 opts = OptionParser.new()
 opts.banner = "A script description here"
 opts.separator ""
 opts.on("-s","--sample", "=SAMPLE","Sample name") {|argument| options.sample = argument }
+opts.on("-p","--precision", "=PRECISION","Precision of calls") {|argument| options.precision = argument }
 opts.on("-v","--version", "=VERSION","PipelineVersion") {|argument| options.version = argument }
 opts.on("-o","--outfile", "=OUTFILE","Output file") {|argument| options.outfile = argument }
 opts.on("-h","--help","Display the usage information") {
- puts opts
- exit
+    puts opts
+    exit
 }
 
 opts.parse! 
+
+options.precision ? precision = options.precision.to_i : precision = 3
 
 sample = options.sample
 
@@ -88,7 +108,7 @@ if hlahd
         if alleles.has_key?(gene)
             a = "" if a.include?("Not typed")
             b = "" if b.include?("Not typed")
-            alleles[gene]["HLA-HD"] = [ a,b ]
+            alleles[gene]["HLA-HD"] = [ trim_allele(a,precision),trim_allele(b,precision) ]
         end
 
     end
@@ -107,7 +127,7 @@ if xhla
 
     alleles.keys.each do |k|
 
-        this_alleles.select {|al| al.match(/^#{k}.*/) }.each {|a| alleles[k]["xHLA"] << a }
+        this_alleles.select {|al| al.match(/^#{k}.*/) }.each {|a| alleles[k]["xHLA"] << trim_allele(a,precision) }
     end
 
     rheader << "xHLA"
@@ -143,8 +163,8 @@ unless hlascan.empty?
             allele_2 = "#{gene}*#{second.split(/\s+/)[2]}"
         end
         
-        alleles[gene]["HLAscan"] << allele_1
-        alleles[gene]["HLAscan"] << allele_2
+        alleles[gene]["HLAscan"] << trim_allele(allele_1,precision)
+        alleles[gene]["HLAscan"] << trim_allele(allele_2,precision)
 
     end
 
@@ -167,11 +187,11 @@ if optitype
 
     header.each_with_index do |h,i|
         if h.match(/^A.*/)
-            alleles["A"]["Optitype"] << e[i+1]
+            alleles["A"]["Optitype"] << trim_allle(e[i+1],precision)
         elsif h.match(/^B.*/)
-            alleles["B"]["Optitype"] << e[i+1]
+            alleles["B"]["Optitype"] << trim_allele(e[i+1],precision)
         elsif h.match(/^C.*/)
-            alleles["C"]["Optitype"] << e[i+1]
+            alleles["C"]["Optitype"] << trim_allele(e[i+1],precision)
         end
     end
 
@@ -202,12 +222,12 @@ if hisat
             tmp.split(",").each do |t|
                 # C*08 - Trimmed (score: 0.9090),C*08:02 - Trimmed (score: 0.3636)
                 # We show percentages for ambiguous calls, but only >= 20% fraction
-                c = t.split(" ")[0].strip
+                c = trim_allele(t.split(" ")[0].strip,precision)
                 abundance = t.split(" ")[-1].gsub(")","")
                 f = abundance.split("%")[0].to_f
                 next if f < hisat_cutoff
-                                alleles[gene]["Hisat"] << "#{c} (#{abundance})"
-                        end
+                    alleles[gene]["Hisat"] << "#{c} (#{abundance})"
+                end
         end
     end
 
@@ -258,7 +278,7 @@ warn results.inspect
 t = pdf.make_table( 
     results,
     :header => true
- )
+)
 
 t.draw
 
