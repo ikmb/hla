@@ -34,11 +34,11 @@ include { HLA } from './workflows/hla'
 multiqc_report = Channel.from([])
 
 log.info "------------------------------------------"
-log.info "IKMB HLA Pipeline"
+log.info "IKMB HLA Pipeline  v${params.version}"
 log.info "------------------------------------------"
-log.info "${workflow.manifest.description}        v${params.version}"
+log.info "${workflow.manifest.description}"
 log.info "Nextflow Version:                        $workflow.nextflow.version"
-log.info "Tools requested:                        ${params.tools}"
+log.info "Tools requested:                         ${params.tools}"
 log.info "Genes to analyse:                        ${params.hla_genes.join(',')}"
 log.info "------------------------------------------"
 

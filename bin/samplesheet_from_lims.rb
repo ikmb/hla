@@ -2,8 +2,47 @@
 
 require 'optparse'
 require 'ostruct'
+require 'rest-client'
+require 'json'
 
 ### Define modules and classes here
+
+def get_library_info(id)
+
+    answer = rest_get("library/info/#{id}")
+    return answer
+end
+
+def rest_get(url)
+    
+    $request_counter ||= 0   # Initialise if unset  
+    $last_request_time ||= 0 # Initialise if unset
+
+    # Rate limiting: Sleep for the remainder of a second since the last request on every third request
+    $request_counter += 1
+    if $request_counter == 15 
+    diff = Time.now - $last_request_time
+    sleep(1-diff) if diff < 1
+    $request_counter = 0
+    end
+
+    begin
+        response = RestClient.get "#{$server}/#{url}", {:accept => :json}
+
+        $last_request_time = Time.now
+        JSON.parse(response)
+    rescue RestClient::Exception => e
+        puts "Failed for #{url}! #{response ? "Status code: #{response}. " : ''}Reason: #{e.message}"
+
+        # Sleep for specified number of seconds if there is a Retry-After header
+        if e.response.headers[:retry_after]
+            sleep(e.response.headers[:retry_after].to_f)
+            retry # This retries from the start of the begin block
+        else
+            abort("Quitting... #{e.inspect}")
+        end
+    end
+end
 
 ### Get the script arguments and open relevant files
 options = OpenStruct.new()
@@ -11,7 +50,6 @@ opts = OptionParser.new()
 opts.banner = "Reads Fastq files from a folder and writes a sample sheet to STDOUT"
 opts.separator ""
 opts.on("-f","--folder", "=FOLDER","Folder to scan") {|argument| options.folder = argument }
-opts.on("-l","--lookup", "=FOLDER","Lookup file") {|argument| options.lookup = argument }
 opts.on("-s","--sanity", "Perform sanity check of md5 sums") { options.sanity = true }
 opts.on("-h","--help","Display the usage information") {
  puts opts
@@ -20,25 +58,18 @@ opts.on("-h","--help","Display the usage information") {
 
 opts.parse! 
 
+$server = "http://172.21.99.59/restapi"
+
 abort "Folder not found (#{options.folder})" unless File.directory?(options.folder)
 
-bucket = {}
-if options.lookup
-    abort "Lookup file not found - please check path!" unless File.exist?(options.lookup)
-    IO.readlines(options.lookup).each do |l|
-        lib,name = l.strip.split("\t")
-        bucket[lib] = name
-    end
-end
-
 date = Time.now.strftime("%Y-%m-%d")
-
 options.centre ? center = options.centre : center = "IKMB"
 
 fastq_files = Dir["#{options.folder}/*_R*.fastq.gz"]
 
 # 221200000285-DS9_22Dez285-DL009_S9_L001_R2_001.fastq.gz
-groups = fastq_files.group_by{|f| f.split("/")[-1].split(/_/)[1] }
+
+groups = fastq_files.group_by{|f| f.split("/")[-1].split(/_S[0-9]*_L0/)[0] }
 
 warn "Building input sample sheet from FASTQ folder"
 warn "Performing sanity check on md5sums" if options.sanity
@@ -55,13 +86,17 @@ groups.each do |group, files|
 
     warn "...processing library #{group}"
 
-    library = group
-    individual = group
+    linfo = get_library_info(group)
 
-    bucket.has_key?(group) ? sample = bucket[group] : sample = group
+    abort "Could not find library information in the NGS LIMS (#{group}) - aborting." unless linfo
+
+    # For HLA, sample and individual usually have the same name
+    sample = linfo["sample"]["external_name"]
+    invididual = sample
 
     individuals << individual
     samples << sample
+    library = linfo["library_name_id"]
 
     pairs = files.group_by{|f| f.split("/")[-1].split(/_R[1,2]/)[0] }
 
@@ -71,7 +106,6 @@ groups.each do |group, files|
     
         abort "This sample seems to not be a set of PE files! #{p}" unless left && right
 
-        # Perform optional MD5 sum check in data
         if options.sanity
             Dir.chdir(options.folder) {
                 [left,right].each do |fastq|
@@ -83,7 +117,9 @@ groups.each do |group, files|
             }
         end
 
-        # Extract read information to build readgroup names
+        individuals << individual
+        samples << sample
+
         e = `zcat #{left} | head -n1 `
         header = e
 
@@ -95,6 +131,7 @@ groups.each do |group, files|
         pgu = flowcell_id + "." + lane + "." + index
 
         puts "#{individual};#{sample};#{library};#{readgroup};#{left};#{right}"
+
     end
 end
 

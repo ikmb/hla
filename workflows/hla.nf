@@ -55,19 +55,19 @@ if (params.samples) {
 
 tools = params.tools ? params.tools.split(',').collect{it.trim().toLowerCase().replaceAll('-', '').replaceAll('_', '')} : []
 
-ch_genes = Channel.fromList(params.hla_genes)
+ch_genes		= Channel.fromList(params.hla_genes)
 // HLAscan is unique in that it can type the HLA-DRB5 gene - we have to add this separately. 
-ch_hlascan_genes = Channel.fromList(params.hla_genes_hlascan)
+ch_hlascan_genes	= Channel.fromList(params.hla_genes_hlascan)
 
-ch_bed = Channel.fromPath("$baseDir/assets/targets/genes.bed", checkIfExists: true)
+ch_bed			= Channel.fromPath("$baseDir/assets/targets/genes.bed", checkIfExists: true)
 
-genome_index = params.genomes[ "hg38" ].fasta
-ch_fasta = Channel.from( [ params.fasta, params.fai, params.dict] )
+genome_index		= params.genomes[ "hg38" ].fasta
+ch_fasta		= Channel.from( [ params.fasta, params.fai, params.dict] )
 
-ch_versions = Channel.from([])
-ch_qc = Channel.from([])
-ch_reports = Channel.from([])
-multiqc_files = Channel.from([])
+ch_versions		= Channel.from([])
+ch_qc			= Channel.from([])
+ch_reports		= Channel.from([])
+multiqc_files		= Channel.from([])
 
 // Workflow
 workflow HLA {
@@ -87,33 +87,29 @@ workflow HLA {
     ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.qc)
     ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.bedcov.map { m,r -> r } )
 
+    // This uses only the trimmed reads
     MERGE_READS(
         TRIM_AND_ALIGN.out.reads
     )
 
     if ( 'hisat' in tools ) {
         HISAT_TYPING(
-            TRIM_AND_ALIGN.out.reads,
+            MERGE_READS.out.reads,
             params.hla_genes.join(",")
         )
         
-        ch_reports     = ch_reports.mix(HISAT_TYPING.out.report)
-        ch_versions = ch_versions.mix(HISAT_TYPING.out.versions)
+        ch_reports	= ch_reports.mix(HISAT_TYPING.out.report)
+        ch_versions	= ch_versions.mix(HISAT_TYPING.out.versions)
 
     }
 
     if ( 'hlahd' in tools ) {
         HLAHD(
-            MERGE_READS.out.reads.map { m,b,i ->
-                [[
-                    patient_id: m.patient_id,
-                    sample_id: m.sample_id
-                ],b,i]
-            }
+            MERGE_READS.out.reads
         )
 
-        ch_reports     = ch_reports.mix(HLAHD.out.report)
-        ch_versions = ch_versions.mix(HLAHD.out.versions)
+        ch_reports	= ch_reports.mix(HLAHD.out.report)
+        ch_versions	= ch_versions.mix(HLAHD.out.versions)
 
     }
 
@@ -133,18 +129,18 @@ workflow HLA {
             TRIM_AND_ALIGN.out.bam.combine(ch_genes_hlascan)
         )
         
-        ch_reports  = ch_reports.mix(HLASCAN.out.report)
-        ch_versions = ch_versions.mix(HLASCAN.out.versions)
+        ch_reports	= ch_reports.mix(HLASCAN.out.report)
+        ch_versions	= ch_versions.mix(HLASCAN.out.versions)
 
     }
 
     if ('optitype' in tools) {
         OPTITYPE(
-            TRIM_AND_ALIGN.out.reads
+            MERGE_READS.out.reads
         )
 
-        ch_reports  = ch_reports.mix(OPTITYPE.out.report)
-        ch_versions = ch_versions.mix(OPTITYPE.out.versions)
+        ch_reports	= ch_reports.mix(OPTITYPE.out.report)
+        ch_versions	= ch_versions.mix(OPTITYPE.out.versions)
 
     }
 

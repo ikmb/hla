@@ -19,4 +19,4 @@ For usage instructions, please see below.
 3. [Running the pipeline](docs/usage.md)
 4. [Output](docs/output.md)
 5. [Troubleshooting](docs/troubleshooting.md)
-
+6. [Development](docs/developer.md)
