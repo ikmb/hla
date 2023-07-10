@@ -1,16 +1,15 @@
 #!/usr/bin/env ruby
 # == NAME
-# script_skeleton.rb
+# report.rb
 #
 # == USAGE
 # ./this_script.rb [ -h | --help ]
 #[ -i | --infile ] |[ -o | --outfile ] | 
 # == DESCRIPTION
-# A skeleton script for Ruby
+# A script to parse raw results from the ikmb/hla pipeline
 #
 # == OPTIONS
 # -h,--help Show help
-# -i,--infile=INFILE input file
 # -o,--outfile=OUTFILE : output file
 
 #
@@ -78,20 +77,23 @@ alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" =
     "DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  }
 }
 
+############
 # Options
+############
+
 ## Only show hisat results supported at this level
-hisat_cutoff = 0.3
+hisat_cutoff	= 0.3
 
 # Find result files
-files = Dir["*"]
-xhla = files.find{|f| f.upcase.include?("XHLA") }
-hisat = files.find{|f| f.upcase.include?("HISAT") }
-optitype = files.find{|f| f.upcase.include?("OPTI") }
-hlascan = files.select {|f| f.upcase.include?("HLASCAN") }
-hlahd = files.find {|f| f.upcase.include?("HLAHD") }
+files		= Dir["*"]
+xhla		= files.find{|f| f.upcase.include?("XHLA") }
+hisat		= files.find{|f| f.upcase.include?("HISAT") }
+optitype	= files.find{|f| f.upcase.include?("OPTI") }
+hlascan		= files.select {|f| f.upcase.include?("HLASCAN") }
+hlahd		= files.find {|f| f.upcase.include?("HLAHD") }
 
 # The header of the result table, only including those tools we actually have data for. 
-rheader = [ "HLA Genes" ]
+rheader		= [ "HLA Genes" ]
 
 ########################
 # HLA-HD data processing
@@ -212,7 +214,6 @@ if hisat
     header = lines.shift.split("\t")
 
     info = lines.shift.split("\t")
-
 
     header.each_with_index do |h,i|
 

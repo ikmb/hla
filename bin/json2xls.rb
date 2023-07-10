@@ -62,6 +62,7 @@ jsons.each_with_index do |json,i|
             if alleles.empty?
                col += 2
             else 
+                # only one haplotype called, assume its hom
                 alleles << alleles[0] if alleles.length < 2
                 alleles.sort.each do |a| 
                     col += 1
@@ -71,7 +72,7 @@ jsons.each_with_index do |json,i|
         end
     end
 
-    # Header comes last, apparently. 
+    # Header comes last, apparently.... 
     header.flatten.each_with_index do |h,i|
         sheet.add_cell(0,i,h)
         sheet.sheet_data[0][i].change_font_bold(true)
