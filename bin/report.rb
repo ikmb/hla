@@ -21,8 +21,6 @@
 require 'optparse'
 require 'ostruct'
 require 'json'
-require 'prawn'
-require 'prawn/table'
 require 'date'
 
 ### Define modules and classes here
@@ -30,7 +28,7 @@ require 'date'
 def trim_allele(call,precision)
 
     answer = nil
-  
+
     call = call.split("*")[-1] if call.include?("*")
 
     e = call.split(":")
@@ -61,6 +59,8 @@ opts.on("-h","--help","Display the usage information") {
 opts.parse! 
 
 options.precision ? precision = options.precision.to_i : precision = 3
+
+date = Date.today.strftime("%d.%m.%Y")
 
 sample = options.sample
 
@@ -234,63 +234,6 @@ if hisat
 
     rheader << "Hisat"
 end
-
-            
-# -------------------------------------------
-# PDF Generation
-# -------------------------------------------
-
-date = Date.today.strftime("%d.%m.%Y")
-
-footer = "Bericht erstellt am: #{date} | Pipeline version: github.com/ikmb/hla:#{options.version}"
-
-pdf = Prawn::Document.new
-
-pdf.font("Helvetica")
-pdf.font_size 14
-
-pdf.text "IKMB - HLA Typisierung mittels Sequenzierung (NGS)"
-
-pdf.move_down 5
-pdf.stroke_horizontal_rule
-
-pdf.font_size 10
-pdf.move_down 5
-pdf.text "Probe: #{sample}"
-pdf.move_down 5
-pdf.text "Qualität: OK"
-pdf.move_down 20
-
-# Table content
-results = []
-results << rheader # table header
-
-alleles.keys.sort.each do |k|
-    r = [ k ]
-    this_result = [ k ]
-    rheader[1..-1].each do |h|
-        this_result << alleles[k][h].sort.map {|a| a.split("*")[-1]}.join("\n")
-    end
-    results << this_result
-end
-
-warn results.inspect
-
-t = pdf.make_table( 
-    results,
-    :header => true
-)
-
-t.draw
-
-pdf.move_cursor_to 30
-pdf.stroke_horizontal_rule
-pdf.move_down 10
-pdf.font_size 8
-pdf.move_down 5
-pdf.text footer
-
-pdf.render_file("#{sample}.pdf")
 
 f = File.new("#{sample}.json","w+")
 data = { "sample" => sample, "calls" => alleles, "pipeline_version" => options.version, "date" => date }

@@ -9,18 +9,37 @@ process REPORT {
     val(precision)
 
     output:
-    tuple val(meta),path(pdf), emit: pdf
     tuple val(meta),path(json), emit: json
 
     script:
     sample = "${meta.sample_id}"
     json = "${sample}.json"
-    pdf = "${sample}.pdf"
     
     """
         report.rb -s ${sample} -v ${workflow.manifest.version} -p $precision
     """
 
+}
+
+process JSON2PDF {
+
+    tag "${meta.patient_id}|${meta.sample_id}"
+
+    publishDir "${params.outdir}/Reports", mode: 'copy'
+
+    input:
+    tuple val(meta),path(json)
+
+    output:
+    tuple val(meta),path(pdf), emit: pdf
+
+    script:
+    sample = "${meta.sample_id}"
+    pdf = "${sample}.pdf"
+    
+    """
+        json2pdf.rb -j ${json} -o $pdf -l ${baseDir}/images/ikmb_bfx_logo.png
+    """
 }
 
 process JSON2XLS {
