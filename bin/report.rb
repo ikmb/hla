@@ -108,9 +108,11 @@ if hlahd
 
         gene,a,b = line.split("\t")
         if alleles.has_key?(gene)
-            a = "" if a.include?("Not typed")
-            b = "" if b.include?("Not typed")
-            alleles[gene]["HLA-HD"] = [ trim_allele(a,precision),trim_allele(b,precision) ]
+            these_alleles = []
+            these_alleles << trim_allele(a,precision) unless a.include?("Not typed") or a.include?("-")
+            these_alleles << trim_allele(b,precision) unless b.include?("Not typed") or b.include?("-")
+
+            alleles[gene]["HLA-HD"] = these_alleles
         end
 
     end
@@ -158,15 +160,17 @@ unless hlascan.empty?
         first = lines.find {|l| l.include?("Type 1") }
         second = lines.find {|l| l.include?("Type 2") }
 
+        these_alleles = []
         if first
             allele_1 = "#{gene}*#{first.split(/\s+/)[2]}"
+            these_alleles << allele_1 unless allele_1.length == 0
         end
         if second
             allele_2 = "#{gene}*#{second.split(/\s+/)[2]}"
+            these_alleles << allele_2 unless allele_1.length == 0
         end
         
-        alleles[gene]["HLAscan"] << trim_allele(allele_1,precision)
-        alleles[gene]["HLAscan"] << trim_allele(allele_2,precision)
+        these_alleles.each {|a| alleles[gene]["HLAscan"] << trim_allele(a,precision)  }
 
     end
 
