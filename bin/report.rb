@@ -21,8 +21,6 @@
 require 'optparse'
 require 'ostruct'
 require 'json'
-require 'prawn'
-require 'prawn/table'
 require 'date'
 
 ### Define modules and classes here
@@ -30,7 +28,7 @@ require 'date'
 def trim_allele(call,precision)
 
     answer = nil
-  
+
     call = call.split("*")[-1] if call.include?("*")
 
     e = call.split(":")
@@ -61,6 +59,8 @@ opts.on("-h","--help","Display the usage information") {
 opts.parse! 
 
 options.precision ? precision = options.precision.to_i : precision = 3
+
+date = Date.today.strftime("%d.%m.%Y")
 
 sample = options.sample
 
@@ -108,9 +108,11 @@ if hlahd
 
         gene,a,b = line.split("\t")
         if alleles.has_key?(gene)
-            a = "" if a.include?("Not typed")
-            b = "" if b.include?("Not typed")
-            alleles[gene]["HLA-HD"] = [ trim_allele(a,precision),trim_allele(b,precision) ]
+            these_alleles = []
+            these_alleles << trim_allele(a,precision) unless a.include?("Not typed") or a.include?("-")
+            these_alleles << trim_allele(b,precision) unless b.include?("Not typed") or b.include?("-")
+
+            alleles[gene]["HLA-HD"] = these_alleles
         end
 
     end
@@ -158,15 +160,17 @@ unless hlascan.empty?
         first = lines.find {|l| l.include?("Type 1") }
         second = lines.find {|l| l.include?("Type 2") }
 
+        these_alleles = []
         if first
             allele_1 = "#{gene}*#{first.split(/\s+/)[2]}"
+            these_alleles << allele_1 unless allele_1.length == 0
         end
         if second
             allele_2 = "#{gene}*#{second.split(/\s+/)[2]}"
+            these_alleles << allele_2 unless allele_1.length == 0
         end
         
-        alleles[gene]["HLAscan"] << trim_allele(allele_1,precision)
-        alleles[gene]["HLAscan"] << trim_allele(allele_2,precision)
+        these_alleles.each {|a| alleles[gene]["HLAscan"] << trim_allele(a,precision)  }
 
     end
 
@@ -234,63 +238,6 @@ if hisat
 
     rheader << "Hisat"
 end
-
-            
-# -------------------------------------------
-# PDF Generation
-# -------------------------------------------
-
-date = Date.today.strftime("%d.%m.%Y")
-
-footer = "Bericht erstellt am: #{date} | Pipeline version: github.com/ikmb/hla:#{options.version}"
-
-pdf = Prawn::Document.new
-
-pdf.font("Helvetica")
-pdf.font_size 14
-
-pdf.text "IKMB - HLA Typisierung mittels Sequenzierung (NGS)"
-
-pdf.move_down 5
-pdf.stroke_horizontal_rule
-
-pdf.font_size 10
-pdf.move_down 5
-pdf.text "Probe: #{sample}"
-pdf.move_down 5
-pdf.text "Qualität: OK"
-pdf.move_down 20
-
-# Table content
-results = []
-results << rheader # table header
-
-alleles.keys.sort.each do |k|
-    r = [ k ]
-    this_result = [ k ]
-    rheader[1..-1].each do |h|
-        this_result << alleles[k][h].sort.map {|a| a.split("*")[-1]}.join("\n")
-    end
-    results << this_result
-end
-
-warn results.inspect
-
-t = pdf.make_table( 
-    results,
-    :header => true
-)
-
-t.draw
-
-pdf.move_cursor_to 30
-pdf.stroke_horizontal_rule
-pdf.move_down 10
-pdf.font_size 8
-pdf.move_down 5
-pdf.text footer
-
-pdf.render_file("#{sample}.pdf")
 
 f = File.new("#{sample}.json","w+")
 data = { "sample" => sample, "calls" => alleles, "pipeline_version" => options.version, "date" => date }

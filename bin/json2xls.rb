@@ -60,7 +60,7 @@ jsons.each_with_index do |json,i|
             header = header + [ tool, "" ] unless header.include?(tool)
 
             if alleles.empty?
-               col += 2
+                col += 2
             else 
                 # only one haplotype called, assume its hom
                 alleles << alleles[0] if alleles.length < 2

@@ -9,6 +9,7 @@ include { OPTITYPE } from '../subworkflows/optitype'
 include { REPORT } from '../modules/reporting'
 include { HLASCAN } from '../modules/hlascan'
 include { JSON2XLS } from '../modules/reporting'
+include { JSON2PDF } from '../modules/reporting'
 include { MERGE_READS } from "./../subworkflows/merge_reads"
 include { HLAHD } from "./../modules/hlahd"
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from "./../modules/custom/dumpsoftwareversions/main"
@@ -61,13 +62,13 @@ ch_hlascan_genes	= Channel.fromList(params.hla_genes_hlascan)
 
 ch_bed			= Channel.fromPath("$baseDir/assets/targets/genes.bed", checkIfExists: true)
 
-genome_index		= params.genomes[ "hg38" ].fasta
+genome_index	= params.genomes[ "hg38" ].fasta
 ch_fasta		= Channel.from( [ params.fasta, params.fai, params.dict] )
 
 ch_versions		= Channel.from([])
 ch_qc			= Channel.from([])
 ch_reports		= Channel.from([])
-multiqc_files		= Channel.from([])
+multiqc_files	= Channel.from([])
 
 // Workflow
 workflow HLA {
@@ -153,6 +154,10 @@ workflow HLA {
         params.precision
     )
 
+    JSON2PDF(
+        REPORT.out.json
+    )
+
     JSON2XLS(
         REPORT.out.json.map {m,j ->j }.collect()
     )
@@ -161,7 +166,8 @@ workflow HLA {
     multiqc_files = multiqc_files.mix(ch_qc)
 
     MULTIQC(
-        multiqc_files.collect()
+        multiqc_files.collect(),
+        params.run_name
     )
 
     emit:

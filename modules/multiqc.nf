@@ -6,6 +6,7 @@ process  MULTIQC {
 
    input:
    path('*')
+   val(rname)
 
    output:
    path('*.html'), emit: report
@@ -13,7 +14,7 @@ process  MULTIQC {
    script:
 
    """
-      multiqc . 
+      multiqc -n ${rname}_multiqc . 
    """    
 
 }

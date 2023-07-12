@@ -78,7 +78,7 @@ Provide a descriptive name for this analysis run.
 
 ### `--precision` [ default = 2]
 
-Desired precision of the reported HLA calls. Default is '2' (HLA-A:01:01).
+Desired precision of the reported HLA calls. Default is '2' (HLA-A*01:01).
 
 ## Testing the pipeline
 
