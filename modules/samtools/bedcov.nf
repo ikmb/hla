@@ -4,7 +4,7 @@ process SAMTOOLS_BEDCOV {
 
     tag "${meta.patient_id}|${meta.sample_id}"
 
-    publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/", mode: 'copy'
+    publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/Coverage", mode: 'copy'
 
     input:
     tuple val(meta),path(bam),path(bai)

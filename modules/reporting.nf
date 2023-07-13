@@ -28,7 +28,7 @@ process JSON2PDF {
     publishDir "${params.outdir}/Reports", mode: 'copy'
 
     input:
-    tuple val(meta),path(json)
+    tuple val(meta),path(json),path(bed)
 
     output:
     tuple val(meta),path(pdf), emit: pdf
@@ -38,7 +38,7 @@ process JSON2PDF {
     pdf = "${sample}.pdf"
     
     """
-        json2pdf.rb -j ${json} -o $pdf -l ${baseDir}/images/ikmb_bfx_logo.png
+        json2pdf.rb -j ${json} -o $pdf -l ${baseDir}/images/ikmb_bfx_logo.png -c $bed
     """
 }
 

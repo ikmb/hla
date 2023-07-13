@@ -85,8 +85,10 @@ workflow HLA {
     
     ch_versions = ch_versions.mix(TRIM_AND_ALIGN.out.versions)
 
-    ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.qc)
-    ch_qc = ch_qc.mix(TRIM_AND_ALIGN.out.bedcov.map { m,r -> r } )
+    bedcov     = TRIM_AND_ALIGN.out.bedcov
+
+    ch_qc       = ch_qc.mix(TRIM_AND_ALIGN.out.qc)
+    ch_qc       = ch_qc.mix(TRIM_AND_ALIGN.out.mosdepth.map{ m,r,g -> r } )
 
     // This uses only the trimmed reads
     MERGE_READS(
@@ -155,7 +157,7 @@ workflow HLA {
     )
 
     JSON2PDF(
-        REPORT.out.json
+        REPORT.out.json.join(bedcov)
     )
 
     JSON2XLS(
