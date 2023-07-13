@@ -109,8 +109,8 @@ if hlahd
         gene,a,b = line.split("\t")
         if alleles.has_key?(gene)
             these_alleles = []
-            these_alleles << trim_allele(a,precision) unless a.include?("Not typed") or a.include?("-")
-            these_alleles << trim_allele(b,precision) unless b.include?("Not typed") or b.include?("-")
+            these_alleles << trim_allele(a,precision) unless a.include?("Not typed") or a == "-"
+            these_alleles << trim_allele(b,precision) unless b.include?("Not typed") or b == "-"
 
             alleles[gene]["HLA-HD"] = these_alleles
         end

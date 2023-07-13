@@ -4,6 +4,7 @@ include { SAMTOOLS_MERGE } from "./../modules/samtools/merge"
 include { SAMTOOLS_INDEX }  from "./../modules/samtools/index"
 include { SAMTOOLS_MARKDUP } from "./../modules/samtools/markdup"
 include { SAMTOOLS_BEDCOV } from "./../modules/samtools/bedcov"
+include { MOSDEPTH } from "./../modules/mosdepth/main"
 
 ch_versions = Channel.from([])
 
@@ -62,6 +63,11 @@ workflow TRIM_AND_ALIGN {
             bed.collect()
         )
 
+        MOSDEPTH(
+            SAMTOOLS_INDEX.out.bam,
+            bed.collect()
+        )
+        
         SAMTOOLS_MARKDUP(
             SAMTOOLS_INDEX.out.bam,
             ch_fasta.collect()
@@ -71,13 +77,14 @@ workflow TRIM_AND_ALIGN {
         ch_versions = ch_versions.mix(SAMTOOLS_MARKDUP.out.versions)
 
     emit:
-        reads             = FASTP.out.reads
-        bedcov             = SAMTOOLS_BEDCOV.out.report
+        reads           = FASTP.out.reads
+        bedcov          = SAMTOOLS_BEDCOV.out.report
+        mosdepth        = MOSDEPTH.out.coverage
         bam             = ch_final_bam
-        qc                 = FASTP.out.json
-        dedup_report     = SAMTOOLS_MARKDUP.out.report
-        sample_names     = BWA_MEM.out.sample_name.unique()
-        metas             = BWA_MEM.out.meta_data
-        versions         = ch_versions
+        qc              = FASTP.out.json
+        dedup_report    = SAMTOOLS_MARKDUP.out.report
+        sample_names    = BWA_MEM.out.sample_name.unique()
+        metas           = BWA_MEM.out.meta_data
+        versions        = ch_versions
 }
 
