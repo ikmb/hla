@@ -193,7 +193,7 @@ if optitype
 
     header.each_with_index do |h,i|
         if h.match(/^A.*/)
-            alleles["A"]["Optitype"] << trim_allle(e[i+1],precision)
+            alleles["A"]["Optitype"] << trim_allele(e[i+1],precision)
         elsif h.match(/^B.*/)
             alleles["B"]["Optitype"] << trim_allele(e[i+1],precision)
         elsif h.match(/^C.*/)
