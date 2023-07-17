@@ -48,6 +48,7 @@ opts = OptionParser.new()
 opts.banner = "A script description here"
 opts.separator ""
 opts.on("-s","--sample", "=SAMPLE","Sample name") {|argument| options.sample = argument }
+opts.on("-c","--coverage", "=COVERAGE","Coverage of exons") {|argument| options.coverage = argument }
 opts.on("-p","--precision", "=PRECISION","Precision of calls") {|argument| options.precision = argument }
 opts.on("-v","--version", "=VERSION","PipelineVersion") {|argument| options.version = argument }
 opts.on("-o","--outfile", "=OUTFILE","Output file") {|argument| options.outfile = argument }
@@ -77,7 +78,36 @@ alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" =
     "DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  }
 }
 
-############
+###################
+# Coverage of exons
+###################
+
+coverage = {}
+
+if options.coverage
+    bedcov = File.open(options.coverage)
+
+    while (line = bedcov.gets)
+
+        # chr6    29942554        29942626        HLA-A.ENST00000376809.1 100     +       9425
+
+        seq,from,to,exon,score,strand,cov = line.strip.split("\t")
+        gene = exon.split(".")[0]
+
+        from = from.to_i
+        to = to.to_i
+        len = to-from
+        mean_cov = (cov.to_f/len.to_f).round()
+
+        this_target = { "exon" => exon, "seq" => seq, "start" => from, "stop" => to, "strand" => strand, "mean_cov" => mean_cov }
+        coverage.has_key?(gene) ? coverage[gene] << this_target : coverage[gene] = [ this_target ]
+
+    end
+
+    bedcov.close
+
+end
+
 # Options
 ############
 
@@ -240,6 +270,6 @@ if hisat
 end
 
 f = File.new("#{sample}.json","w+")
-data = { "sample" => sample, "calls" => alleles, "pipeline_version" => options.version, "date" => date }
+data = { "sample" => sample, "coverage" => coverage, "calls" => alleles, "pipeline_version" => options.version, "date" => date }
 f.puts data.to_json
 f.close
