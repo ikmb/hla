@@ -5,7 +5,7 @@ process REPORT {
     publishDir "${params.outdir}/Reports", mode: 'copy'
 
     input:
-    tuple val(meta),path(reports)
+    tuple val(meta),path(reports),path(coverage)
     val(precision)
 
     output:
@@ -16,7 +16,7 @@ process REPORT {
     json = "${sample}.json"
     
     """
-        report.rb -s ${sample} -v ${workflow.manifest.version} -p $precision
+        report_with_cov.rb -c $coverage -s ${sample} -v ${workflow.manifest.version} -p $precision
     """
 
 }
@@ -28,7 +28,7 @@ process JSON2PDF {
     publishDir "${params.outdir}/Reports", mode: 'copy'
 
     input:
-    tuple val(meta),path(json),path(bed)
+    tuple val(meta),path(json)
 
     output:
     tuple val(meta),path(pdf), emit: pdf
@@ -38,7 +38,7 @@ process JSON2PDF {
     pdf = "${sample}.pdf"
     
     """
-        json2pdf.rb -j ${json} -o $pdf -l ${baseDir}/images/ikmb_bfx_logo.png -c $bed
+        json2pdf.rb -j ${json} -o $pdf -l ${baseDir}/images/ikmb_bfx_logo.png
     """
 }
 

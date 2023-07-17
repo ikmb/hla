@@ -152,12 +152,12 @@ workflow HLA {
     )
 
     REPORT(
-        ch_reports.groupTuple(),
+        ch_reports.groupTuple().join(bedcov),
         params.precision
     )
 
     JSON2PDF(
-        REPORT.out.json.join(bedcov)
+        REPORT.out.json
     )
 
     JSON2XLS(

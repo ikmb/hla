@@ -52,7 +52,6 @@ opts = OptionParser.new()
 opts.banner = "A script description here"
 opts.separator ""
 opts.on("-j","--json", "=JSON","JSON input") {|argument| options.json = argument }
-opts.on("-c","--coverage", "=COVERAGE","Coverage input") {|argument| options.cov = argument }
 opts.on("-l","--logo", "=LOGO","Logo to include") {|argument| options.logo = argument }
 opts.on("-o","--outfile", "=OUTFILE","Output file") {|argument| options.outfile = argument }
 opts.on("-h","--help","Display the usage information") {
@@ -65,26 +64,6 @@ opts.parse!
 coverage    = {}
 genes       = {}
 
-if options.cov
-    IO.readlines(options.cov).each do |line|
-        chr,from,to,exon,score,strand,cov = line.strip.split("\t")
-        from = from.to_i
-        to = to.to_i
-        len = to-from
-        mean = (cov.to_f/len.to_f).round()
-        
-        gene = exon.split(".")[0]
-
-        if genes.has_key?(gene)
-            genes[gene]["exons"] << [ from, to, mean ]
-        else
-            genes[gene] = { "strand" => strand, "exons" => [ [from, to, mean ]] }
-        end
-
-        coverage[exon] = mean
-    end
-end
-
 json = JSON.parse(IO.readlines(options.json).join("\n"))
 
 calls       = json["calls"]
@@ -93,6 +72,24 @@ version     = json["pipeline_version"]
 
 data        = []
 header      = []
+
+cov_data    = json["coverage"]
+
+cov_data.each do |gene,data|
+
+    data.each do |d|
+    
+        if genes.has_key?(gene)
+            genes[gene]["exons"] << [ d["start"], d["stop"], d["mean_cov"] ]
+        else
+            genes[gene] = { "strand" => d["strand"], "exons" => [ [ d["start"], d["stop"], d["mean_cov"] ] ] }
+        end
+
+        coverage["exon"] = d["mean_cov"]
+
+    end
+
+end
 
 # Transform the JSON structure into something Prawn can make a table from (array of arrays)
 calls.each do |gene,results|
