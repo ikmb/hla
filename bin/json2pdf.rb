@@ -61,19 +61,20 @@ opts.on("-h","--help","Display the usage information") {
 
 opts.parse! 
 
-coverage    = {}
-genes       = {}
+coverage            = {}
+genes               = {}
 
 json = JSON.parse(IO.readlines(options.json).join("\n"))
 
-calls       = json["calls"]
-sample      = json["sample"]
-version     = json["pipeline_version"]
+calls               = json["calls"]
+sample              = json["sample"]
+version             = json["pipeline_version"]
+commercial_tools    = json["commercial_tools"]
 
-data        = []
-header      = []
+data                = []
+header              = []
 
-cov_data    = json["coverage"]
+cov_data            = json["coverage"]
 
 cov_data.each do |gene,data|
 
@@ -91,11 +92,19 @@ cov_data.each do |gene,data|
 
 end
 
+has_disclaimer = false
+
 # Transform the JSON structure into something Prawn can make a table from (array of arrays)
 calls.each do |gene,results|
 
+    rk = results.keys
+    tools = []
+    rk.each do |r|
+        commercial_tools.include?(r) ? tools << "#{r}*" : tools << r
+    end
+
     if header.empty?
-        header = [ "Locus" ] + results.keys
+        header = [ "Locus" ] + tools
         data << header
     end
 
@@ -142,12 +151,14 @@ t = pdf.make_table(
 )
 
 t.draw
+pdf.move_down 5
+pdf.font_size 8
+
+pdf.text "Tool results marked with '*' may only be used in academic research!"
 
 pdf.move_cursor_to 30
 pdf.stroke_horizontal_rule
 pdf.move_down 10
-pdf.font_size 8
-pdf.move_down 5
 pdf.text footer
 
 

@@ -42,7 +42,7 @@ process JSON2PDF {
     """
 }
 
-process JSON2XLS {
+process JSON2XLS_SUMMARY {
 
     container 'ikmb/exome-seq:5.2'
 
@@ -56,13 +56,35 @@ process JSON2XLS {
     output:
     path(xls)
 
+    script:
+    xls = params.run_name + ".xlsx"
+
+    """
+        json2xls_summary.rb --outfile $xls
+    """
+}
+
+process JSON2XLS {
+
+    container 'ikmb/exome-seq:5.2'
+
+    tag "All"
+
+    publishDir "${params.outdir}/Reports", mode: 'copy'
+
+    input:
+    tuple val(meta),path(jsons)
+
+    output:
+    path(xls)
+
     when:
     params.excel
 
     script:
-    xls = params.run_name + "-report.xlsx"
+    xls = meta.sample_id + "-report.xlsx"
 
     """
-        json2xls.rb --outfile $xls
+        json2xls_single.rb --infile $json --outfile $xls
     """
 }
