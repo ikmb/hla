@@ -14,7 +14,7 @@ RUN cd /opt && git clone --recurse-submodules https://github.com/DaehwanKimLab/h
 
 RUN cd /opt && mkdir hlascan && cd hlascan && wget https://github.com/SyntekabioTools/HLAscan/releases/download/v2.1.4/hla_scan_r_v2.1.4 && mv hla_scan_r_v2.1.4 hla_scan && chmod +x hla_scan
 
-RUN cd /opt && wget https://cache.ruby-lang.org/pub/ruby/3.2/ruby-3.2.2.tar.gz && tar -xvf ruby-3.2.2.tar.gz && cd ruby-3.2.2 && cd ruby-3.2.2 && ./configure && make && make install
+RUN cd /opt && wget https://cache.ruby-lang.org/pub/ruby/3.2/ruby-3.2.2.tar.gz && tar -xvf ruby-3.2.2.tar.gz && cd ruby-3.2.2 && ./configure && make && make install
 
 RUN gem install json
 RUN gem install prawn
