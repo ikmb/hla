@@ -7,7 +7,7 @@ RUN conda env create -f /environment.yml && conda clean -a
 ENV PATH /opt/conda/envs/hla-1.6/bin:/opt/hisat-genotype:/opt/hisat-genotype/hisat2:/opt/hlascan/:$PATH
 ENV PYTHONPATH /opt/hisat-genotype/hisatgenotype_modules:$PYTHONPATH
 
-RUN apt-get -y update && apt-get -y install make wget git gcc g++ openssl zlib1g-dev libyaml-dev xml2 libjson-c-dev 
+RUN apt-get -y update && apt-get -y install make wget git gcc g++ openssl zlib1g-dev libyaml-dev xml2 libjson-c-dev libssl-dev
 
 RUN cd /opt && git clone --recurse-submodules https://github.com/DaehwanKimLab/hisat-genotype \
     && cd hisat-genotype/hisat2 && make -j2
