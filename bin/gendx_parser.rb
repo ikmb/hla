@@ -10,6 +10,31 @@ require 'optparse'
 require 'ostruct'
 
 ### Define modules and classes here
+
+def get_majority_call(calls)
+
+    bucket = {}
+    calls.each do |c|
+        next if c.empty?
+        combined = c.join(",")
+        bucket.has_key?(combined) ? bucket[combined] += 1 : bucket[combined] = 1
+    end
+
+    sorted = bucket.sort_by{|k,v| v}.reverse
+
+    best = sorted[0]
+
+    best_name = best.shift
+    best_value = best.shift
+
+    sorted.select{|s| s[1] == best_value }.length > 1 ? conflict = true : conflict = false
+
+    conflict ? answer =  "Ambigious" : answer = best_name
+
+    return answer
+
+end
+
 def trim_allele(call,precision)
 
     answer = nil
@@ -68,102 +93,131 @@ opts.on("-h","--help","Display the usage information") {
 
 opts.parse!
 
+abort "Must provide (valid) name for result file" unless options.outfile && options.outfile.include?(".xlsx")
+
 options.precision ? precision = options.precision.to_i : precision = 2
 
 abort "Path to JSON files not found" unless File.directory?(options.jsons)
 
-even = "FFFFFF"
-uneven = "93DDFF"
+even        = "FFFFFF"
+uneven      = "93DDFF"
 
-jsons = Dir["#{options.jsons}/*.json"]
+jsons       = Dir["#{options.jsons}/*.json"]
+
 abort "No JSON files in folder" if jsons.empty?
+
+bucket      = {}
+
+genes       = []
 
 ###########################
 # READ PDF FILE 
 ############################
 reader = PDF::Reader.new(options.pdf)
 
-# Page 1 holds the main report
-front = reader.pages[0]
+results     = {}
+sample      = nil
 
-text = front.text.split("\n")
+reader.pages.each_with_index do |page,i|
 
-results = {}
+    warn "Parsing page #{i}"
 
-sample = nil
+    text = page.text.split("\n")
 
-# Find the result lines
-text.each do |line|
-    
-    line.strip!
+    # Find the result lines
+    text.each do |line|
 
-    if line.match(/^Sample:\s.*/) && sample.nil?
-        sample = line.split(/\s+/)[-1]
-    end
+        line.strip!
 
-    next unless line.match(/.*reviewed$/) 
+        if line.match(/^Sample:\s.*/) && !line.include?("NGSengine")
+
+            unless results.empty?
+                bucket[sample] = results
+            end
+
+            results = {}
+
+            sample = line.split(/\s+/)[-1]
+
+        end
+
+        next unless line.match(/.*reviewed$/) 
 
         # Gene Allele 1           Allele 2           CWD 1    CWD 2    Review status
 
-    gene,allele_a,allele_b,cwd_a,cwd_b,status = line.strip.split(/\s+/)
+        gene,allele_a,allele_b,cwd_a,cwd_b,status = line.strip.split(/\s+/)
 
-    alleles = [ trim_allele(allele_a,precision),trim_allele(allele_b,precision)]
+        alleles = [ trim_allele(allele_a,precision),trim_allele(allele_b,precision)]
 
-    # Clean additional characters resulting from footnotes by removing a potential third integer in the last position
-    alleles.each_with_index do |a,i|
-        last = a.strip.split(":")[-1]
-        if last.length > 2
-            alleles[i] = a.slice!(0..-2)
+        # Clean additional characters resulting from footnotes by removing a potential third integer in the last position
+        alleles.each_with_index do |a,i|
+            last = a.strip.split(":")[-1]
+            if last.length > 2
+                alleles[i] = a.slice!(0..-2)
+            end
         end
-    end
 
-    # Sanitize gene name (HLA-A -> A)
-    gene = gene.split("-")[-1]
-    
-    results[gene] = alleles.sort
+        # Sanitize gene name (HLA-A -> A)
+        warn "#{gene} #{sample} #{line}"
+        gene = gene.split("-")[-1]
+        
+        genes << gene unless genes.include?(gene)
+        results[gene] = alleles.sort
+        exit if gene.include?("*")
+        
+    end
 
 end
 
-abort "Could not find HLA calls in the PDF (format changed?!)" if results.keys.empty?
+bucket[sample] = results
+
+abort "Could not find HLA calls in the PDF (format changed?!)" if bucket.keys.empty?
+
+# Create XLS sheet
+workbook = RubyXL::Workbook.new
 
 # FIND MATCHING JSON FILE
-json = jsons.find{|j| j.include?(sample) }
-abort "Could not find matching json file (#{sample}) under the path provided!"
 
-# Build a HASH per gene, for each calling approach - starting with GenDX
-if json
+genes.sort.each do |gene|
 
-    # Create XLS sheet
-    workbook = RubyXL::Workbook.new
+    sheet   = workbook.add_worksheet(gene)
 
-    sheet = workbook.worksheets[0]
-    sheet.sheet_name = sample
+    row     = 0
+    col     = 0
 
-    row = 0
-    col = 0
+    data  = {}
 
-    bucket = {}
+    bucket.each do |sample,results|
 
-    j = JSON.parse(IO.readlines(json).join)
+        json = jsons.find{|j| j.include?(sample) }
 
-    ###############################################
-    # Add results from various tools to result HASH
-    ###############################################
+        warn "Could not find matching json file (#{sample}) under the path provided!" unless json
 
-    results.each do |gene,calls|
-        bucket[gene] = { "GenDX" => calls }
+        next unless json
+
+        j = JSON.parse(IO.readlines(json).join)
+
+        ###############################################
+        # Add results from various tools to result HASH
+        ###############################################
+
+        calls = results[gene]
+
+        data[sample] = { "GenDX" => calls }
+
         if j["calls"].has_key?(gene)
             l_calls = j["calls"][gene]
             l_calls.each do |tool,t_calls|
 
                 # sanitize call names
                 t_calls = t_calls.map {|tc| trim_allele(tc.split("*")[-1],precision) }
-                bucket[gene][tool] = t_calls.sort
+                data[sample][tool] = t_calls.sort
 
             end
         else
-            warn "Gene not found: #{gene}"
+            warn "Gene #{gene} not found: #{gene} in #{j['calls'].inspect}"
         end
+
     end
 
     ################################
@@ -171,8 +225,11 @@ if json
     ################################
 
     header = []
-    header << "Locus"
-    bucket["A"].keys.map {|k| [ "#{k}-1", "#{k}-2" ] }.flatten.each {|k| header << k }
+    header << "Sample"
+
+    data.first[1].keys.map {|k| [ "#{k}-1", "#{k}-2" ] }.flatten.each {|k| header << k }
+
+    header << "MajorityCall"
 
     # Write the table header
     header.each do |h|
@@ -186,16 +243,17 @@ if json
     col = 0
     row = 0
 
-    issues = false
-
-    bucket.each do |gene,calls|
+    data.each do |sample,calls|
         
         col = 0
         row += 1
+
         color = row.even? ? even : uneven
 
+        sample_calls = []
+
         # write the gene locus
-        sheet.add_cell(row,col,gene)
+        sheet.add_cell(row,col,sample)
         sheet.sheet_data[row][col].change_fill(color)
         sheet.sheet_data[row][col].change_font_bold(true)
         
@@ -222,13 +280,15 @@ if json
                     sheet.sheet_data[row][col].change_fill(color)
                     col += 1
                 end
+
+                sample_calls << tcalls
             
             # Any other tool with existing calls
             else
 
                 # Try to sanitize hisat outputs and reduce to minimum set of alleles
                 if tool == "Hisat"
-                    tcalls = hisat_reconcile(tcalls)
+                        tcalls = hisat_reconcile(tcalls)
                 end
             
                 tcalls = tcalls.select {|tc| tc.length > 1 }
@@ -237,6 +297,8 @@ if json
                 if tcalls.length == 1
                     tcalls << tcalls[0]
                 end
+
+                sample_calls << tcalls
 
                 tcalls.sort[0..1].each_with_index do |t,i|
 
@@ -266,21 +328,23 @@ if json
                     end
 
                     col += 1
-                
-                end
+                                
+                end # tcalls
             
-            end
+            end # else
 
         end # calls
 
-        
-    end # bucket
-    
-    issues ? appendix = ".conflicts" : appendix = ""
-    workbook.write("#{sample}#{appendix}.xlsx")
+        # majority call
 
-else
-    warn "No matching JSON found!"
-end # json
+        mc = get_majority_call(sample_calls)
+
+        sheet.add_cell(row,col,mc)        
+        sheet.sheet_data[row][col].change_fill(color)
 
 
+    end # data
+
+end # genes
+
+workbook.write("#{options.outfile}")

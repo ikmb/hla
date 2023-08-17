@@ -44,7 +44,7 @@ process JSON2PDF {
 
 process JSON2XLS_SUMMARY {
 
-    container 'ikmb/exome-seq:5.2'
+    container 'ikmb/exome-seq:5.1'
 
     tag "All"
 
@@ -66,7 +66,7 @@ process JSON2XLS_SUMMARY {
 
 process JSON2XLS {
 
-    container 'ikmb/exome-seq:5.2'
+    container 'ikmb/exome-seq:5.1'
 
     tag "All"
 
