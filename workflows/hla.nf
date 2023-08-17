@@ -10,6 +10,7 @@ include { REPORT } from '../modules/reporting'
 include { HLASCAN } from '../modules/hlascan'
 include { JSON2XLS } from '../modules/reporting'
 include { JSON2PDF } from '../modules/reporting'
+include { JSON2XLS_SUMMARY } from '../modules/reporting'
 include { MERGE_READS } from "./../subworkflows/merge_reads"
 include { HLAHD } from "./../modules/hlahd"
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from "./../modules/custom/dumpsoftwareversions/main"
@@ -161,7 +162,11 @@ workflow HLA {
     )
 
     JSON2XLS(
-        REPORT.out.json.map {m,j ->j }.collect()
+        REPORT.out.json
+    )
+
+    JSON2XLS_SUMMARY(
+        REPORT.out.json.map { m,j -> j}.collect()
     )
     
     multiqc_files = multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml)

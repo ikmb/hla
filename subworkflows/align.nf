@@ -24,8 +24,16 @@ workflow TRIM_AND_ALIGN {
 
         ch_versions = ch_versions.mix(FASTP.out.versions)
 
+        // weed out all the files that did not survive the trimming, i.e are smaller than 1MB in size...
+        FASTP.out.reads.branch { m,f,r ->
+            trimmed: file(f).size() >= 1000000
+            failed: file(f).size() < 1000000
+        }.set { ch_reads }
+
+        ch_reads.failed.view { m,f,r -> "Discarding ${m.sample_id} due to low read count..."}
+
         BWA_MEM( 
-            FASTP.out.reads,
+            ch_reads.trimmed,
             genome_index
         )
 
@@ -77,7 +85,7 @@ workflow TRIM_AND_ALIGN {
         ch_versions = ch_versions.mix(SAMTOOLS_MARKDUP.out.versions)
 
     emit:
-        reads           = FASTP.out.reads
+        reads           = ch_reads.trimmed
         bedcov          = SAMTOOLS_BEDCOV.out.report
         mosdepth        = MOSDEPTH.out.coverage
         bam             = ch_final_bam

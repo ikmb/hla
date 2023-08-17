@@ -25,6 +25,16 @@ require 'date'
 
 ### Define modules and classes here
 
+# Add actually used tool to the result hash to avoid having empty results
+def add_tool(tool,alleles)
+    updated = alleles.clone
+    alleles.keys.each do |k|
+        updated[k][tool] = []
+    end
+    return updated
+end
+
+# Trim alleles to a desired resolution
 def trim_allele(call,precision)
 
     answer = nil
@@ -65,17 +75,18 @@ date = Date.today.strftime("%d.%m.%Y")
 
 sample = options.sample
 
-alleles =  { "A" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  }, 
-    "B" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
-    "C" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
-    "DQB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
-    "DRB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
-    "DRB4" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
-    "DRB5" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
-    "DQA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
-    "DRB3" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
-    "DPA1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  },
-    "DPB1" => { "xHLA" => [], "Hisat" => [], "Optitype" => [], "HLAscan" => [], "HLA-HD" => []  }
+alleles = { 
+    "A" => {},
+    "B" => {},
+    "C" => {},
+    "DQB1" => {},
+    "DRB1" => {},
+    "DRB4" => {},
+    "DRB5" => {},
+    "DQA1" => {},
+    "DRB3" => {},
+    "DPA1" => {},
+    "DPB1" => {}
 }
 
 ###################
@@ -125,11 +136,17 @@ hlahd		= files.find {|f| f.upcase.include?("HLAHD") }
 # The header of the result table, only including those tools we actually have data for. 
 rheader		= [ "HLA Genes" ]
 
+commercial_tools = [ ]
+
 ########################
 # HLA-HD data processing
 ########################
 
 if hlahd 
+
+    commercial_tools << "HLA-HD"
+
+    alleles = add_tool("HLA-HD",alleles)
 
     IO.readlines(hlahd).each do |line|
         
@@ -155,6 +172,10 @@ end
 
 if xhla
 
+    commercial_tools << "xHLA"
+
+    alleles = add_tool("xHLA",alleles)
+
     json = JSON.parse( IO.readlines(xhla).join )
 
     this_alleles = json["hla"]["alleles"]
@@ -172,6 +193,10 @@ end
 ###########################
 
 unless hlascan.empty?
+
+    commercial_tools << "HLAscan"
+
+    alleles = add_tool("HLAscan",alleles)
 
     hlascan.each do |h|
 
@@ -214,6 +239,8 @@ end
 
 if optitype
 
+    alleles = add_tool("Optitype",alleles)
+
     lines = IO.readlines(optitype)[0..1]
     header = lines.shift.strip.split(/\t/)
 
@@ -244,6 +271,8 @@ if hisat
 
     # 1 ranked B*35:08:01 (abundance: 50.20%) 
 
+    alleles = add_tool("Hisat",alleles)
+
     lines = IO.readlines(hisat)
     header = lines.shift.split("\t")
 
@@ -270,6 +299,6 @@ if hisat
 end
 
 f = File.new("#{sample}.json","w+")
-data = { "sample" => sample, "coverage" => coverage, "calls" => alleles, "pipeline_version" => options.version, "date" => date }
+data = { "sample" => sample, "coverage" => coverage, "calls" => alleles, "pipeline_version" => options.version, "date" => date , "commercial_tools" => commercial_tools }
 f.puts data.to_json
 f.close
