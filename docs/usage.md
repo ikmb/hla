@@ -29,7 +29,7 @@ A simple ruby script is included with this pipeline to produce this file from a 
 the output to make sure that it correctly recognized the file names etc.
 
 ```
-ruby samplesheet_from_folder.rb -f /path/to/data
+ruby samplesheet_from_folder.rb -f /path/to/data > Samples.csv
 ```
 
 This can then be used as input like so:
@@ -78,7 +78,7 @@ Provide a descriptive name for this analysis run.
 
 ### `--precision` [ default = 2]
 
-Desired precision of the reported HLA calls. Default is '2' (HLA-A*01:01).
+Desired precision of the reported HLA calls. Default is '2' (i.e. HLA-A*01:01).
 
 ## Testing the pipeline
 
@@ -87,7 +87,3 @@ This pipeline has a built-in test. To run it, simply provide the appropriate pro
 ```
 nextflow run ikmb/hla -profile standard,test
 ```
-
-### `--excel` [ true | false (default) ]
-
-Create a multi-sheet Excel document with all results. This should only be used for small sample numbers (<= 10) and is hence off by default!
