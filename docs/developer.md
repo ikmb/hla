@@ -34,10 +34,10 @@ Tool-specific results are added to the `ch_reports` channel and grouped by the m
 to the pipeline, make sure they add to this channel.
 
 The actual aggregation of sample-specific results happens with help of the script [report.rb](../bin/report.rb). If you add new types of reports, or perform tool updates that change
-the report format, you will have to modify this script (or replace it with something you can edit moving forward). It is, admittably, a but crummy in its current state. 
+the report format, you will have to modify this script (or replace it with something you can edit moving forward). It is, admittably, a bit crummy in its current state. 
 
-The script emits both a PDF formatted report as well as a JSON object that can be used for futher processing. The report, importantly, implements the `--precision` flag defined in the
-nextflow config to trim alleles down to a desired resultion/precision. 
+The script emits both a PDF formatted report as well as a JSON object that can be used for further processing. The report, importantly, implements the `--precision` flag defined in the
+nextflow config to trim alleles down to a desired resolution/precision. 
 
 
 

@@ -10,7 +10,10 @@ Results are split by patient and therein by sample(s). Each sample folder contai
 
 ### JSON
 
-The JSON format can be used to programmatically parse and transform the result data. An example follows below:
+The JSON format can be used to programmatically parse and transform the result data. An example follows below. A few gottchas:
+
+* Exon names are given in their GenCode 42 designation. 
+* mean_cov really is the mean coverage over an exon, irrespective of its length (duh). So the number tells you nothing about whether coverage is partial or complete.  
 
 ```
 {

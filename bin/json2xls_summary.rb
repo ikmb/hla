@@ -44,6 +44,7 @@ pversion    = nil
 date        = nil
 bucket      = {}
 coverages   = {}
+genes       = []
 
 jsons.each do |json|
 
@@ -54,7 +55,7 @@ jsons.each do |json|
     pversion    = j["pipeline_version"]
     date        = j["date"]
     coverages[sample] = j["coverage"] 
-    
+        
     calls.each do |gene,data|
 
         this_data = { "sample" => sample, "data" => data }

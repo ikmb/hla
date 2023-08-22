@@ -24,10 +24,10 @@ workflow TRIM_AND_ALIGN {
 
         ch_versions = ch_versions.mix(FASTP.out.versions)
 
-        // weed out all the files that did not survive the trimming, i.e are smaller than 1MB in size...
+        // weed out all the files that did not survive the trimming, i.e are smaller than 500kb in size...
         FASTP.out.reads.branch { m,f,r ->
-            trimmed: file(f).size() >= 1000000
-            failed: file(f).size() < 1000000
+            trimmed: file(f).size() >= 500000
+            failed: file(f).size() < 500000
         }.set { ch_reads }
 
         ch_reads.failed.view { m,f,r -> "Discarding ${m.sample_id} due to low read count..."}

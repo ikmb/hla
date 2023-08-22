@@ -11,6 +11,7 @@ require 'ostruct'
 
 ### Define modules and classes here
 
+# Check calls across all tools to find the best-supported one
 def get_majority_call(calls)
 
     bucket = {}
@@ -35,6 +36,7 @@ def get_majority_call(calls)
 
 end
 
+# Reduce resolution of HLA calls to the desired level (e.g., 2 = xx:xx)
 def trim_allele(call,precision)
 
     answer = nil
@@ -48,6 +50,7 @@ def trim_allele(call,precision)
     return answer
 end
 
+# Try to sanitize HiSat calls to only emit the best-guess diploid call
 def hisat_reconcile(list)
     answer = []
     list = list.map {|l| l.split("*")[-1]}
@@ -99,6 +102,8 @@ options.precision ? precision = options.precision.to_i : precision = 2
 
 abort "Path to JSON files not found" unless File.directory?(options.jsons)
 
+# Set some basic variables we will use later
+
 even        = "FFFFFF"
 uneven      = "93DDFF"
 
@@ -118,6 +123,7 @@ reader = PDF::Reader.new(options.pdf)
 results     = {}
 sample      = nil
 
+# read the GenDX PDF report, page by page
 reader.pages.each_with_index do |page,i|
 
     warn "Parsing page #{i}"
@@ -129,6 +135,7 @@ reader.pages.each_with_index do |page,i|
 
         line.strip!
 
+        # best-guess on how to find the current sample name
         if line.match(/^Sample:\s.*/) && !line.include?("NGSengine")
 
             unless results.empty?
@@ -141,12 +148,14 @@ reader.pages.each_with_index do |page,i|
 
         end
 
+        # GenDX calls are apparently listed on lines together with the *reviewed string
         next unless line.match(/.*reviewed$/) 
 
         # Gene Allele 1           Allele 2           CWD 1    CWD 2    Review status
 
         gene,allele_a,allele_b,cwd_a,cwd_b,status = line.strip.split(/\s+/)
 
+        # Parsing the alleles
         alleles = [ trim_allele(allele_a,precision),trim_allele(allele_b,precision)]
 
         # Clean additional characters resulting from footnotes by removing a potential third integer in the last position
@@ -158,17 +167,19 @@ reader.pages.each_with_index do |page,i|
         end
 
         # Sanitize gene name (HLA-A -> A)
-        warn "#{gene} #{sample} #{line}"
         gene = gene.split("-")[-1]
         
         genes << gene unless genes.include?(gene)
         results[gene] = alleles.sort
+
+        # this should not happen and suggests an issue parsing the report. 
         exit if gene.include?("*")
         
     end
 
 end
 
+# Clean up the final dangling sample
 bucket[sample] = results
 
 abort "Could not find HLA calls in the PDF (format changed?!)" if bucket.keys.empty?
@@ -176,8 +187,10 @@ abort "Could not find HLA calls in the PDF (format changed?!)" if bucket.keys.em
 # Create XLS sheet
 workbook = RubyXL::Workbook.new
 
-# FIND MATCHING JSON FILE
+# Store samples that are present in the GenDX report not do not have a JSON report (omitted by pipeline?)
+missing_samples = []
 
+# We report this gene by gene rather than per-sample
 genes.sort.each do |gene|
 
     sheet   = workbook.add_worksheet(gene)
@@ -189,9 +202,11 @@ genes.sort.each do |gene|
 
     bucket.each do |sample,results|
 
+
+        # We find the matching JSON report or record the sample as missing
         json = jsons.find{|j| j.include?(sample) }
 
-        warn "Could not find matching json file (#{sample}) under the path provided!" unless json
+        missing_samples << sample unless json
 
         next unless json
 
@@ -201,6 +216,7 @@ genes.sort.each do |gene|
         # Add results from various tools to result HASH
         ###############################################
 
+        # Getting the results for this gene and sample across all tools
         calls = results[gene]
 
         data[sample] = { "GenDX" => calls }
@@ -227,6 +243,7 @@ genes.sort.each do |gene|
     header = []
     header << "Sample"
 
+    # add names of all the tools to the header
     data.first[1].keys.map {|k| [ "#{k}-1", "#{k}-2" ] }.flatten.each {|k| header << k }
 
     header << "MajorityCall"
@@ -336,7 +353,6 @@ genes.sort.each do |gene|
         end # calls
 
         # majority call
-
         mc = get_majority_call(sample_calls)
 
         sheet.add_cell(row,col,mc)        
@@ -348,3 +364,7 @@ genes.sort.each do |gene|
 end # genes
 
 workbook.write("#{options.outfile}")
+
+missing_samples.uniq.each do |ms|
+    warn "Could not find JSON for #{ms} - omitting sample!"
+end
