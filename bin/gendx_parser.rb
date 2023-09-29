@@ -255,26 +255,23 @@ elsif options.csv
         
         if this_sample && this_sample != sample
         
-            bucket[sample] = results
+            bucket[this_sample] = results
             results = {}
             
         end
         
-        results[gene] = alleles                            
-        #puts "#{patient}\t#{locus}\t#{calls.join(',')}"
+        results[gene] = alleles.sort
         this_sample = sample
                                                                                     
     end
     
-    bucket[sample] = results
+    bucket[this_sample] = results
                                                     
 else
 
     abort "Must provide a GenDX input (--pdf or --csv)"
     
 end
-
-puts bucket.inspect
 
 # Create XLS sheet
 workbook = RubyXL::Workbook.new
@@ -296,8 +293,6 @@ genes.sort.each do |gene|
 
     bucket.each do |sample,results|
     
-        warn sample
-
         # We find the matching JSON report or record the sample as missing
         json = jsons.find{|j| j.include?(sample) }
 
@@ -305,8 +300,6 @@ genes.sort.each do |gene|
         
         next unless json
         
-	warn "Found json..."
-
         j = JSON.parse(IO.readlines(json).join)
 
         ###############################################
@@ -316,9 +309,11 @@ genes.sort.each do |gene|
         # Getting the results for this gene and sample across all tools
         calls = results[gene]
 
+	if calls.nil?  
+		calls = [ "NoCall","NoCall" ]      
+	end
+
 	if calls.empty?
-		warn "No calls for #{gene}"
-		warn results.inspect
 		calls = [ "NoCall","NoCall" ]
 	end
 	
