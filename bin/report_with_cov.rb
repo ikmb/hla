@@ -276,17 +276,20 @@ if hisat
     lines = IO.readlines(hisat)
     header = lines.shift.split("\t")
 
-    info = lines.shift.split("\t")
+    info = lines.shift.strip.split("\t")
 
     header.each_with_index do |h,i|
 
         if h.include?("Allele splitting: ")
             gene = h.split(" ")[-1]
             tmp = info[i]
+            next if tmp.nil?
             tmp.split(",").each do |t|
                 # C*08 - Trimmed (score: 0.9090),C*08:02 - Trimmed (score: 0.3636)
                 # We show percentages for ambiguous calls, but only >= 20% fraction
-                c = trim_allele(t.split(" ")[0].strip,precision)
+                a = t.split(" ")
+                next if a.nil? || a.empty?
+                c = trim_allele(a[0].strip,precision)
                 abundance = t.split(" ")[-1].gsub(")","")
                 f = abundance.split("%")[0].to_f
                 next if f < hisat_cutoff

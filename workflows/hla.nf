@@ -57,19 +57,28 @@ if (params.samples) {
 
 tools = params.tools ? params.tools.split(',').collect{it.trim().toLowerCase().replaceAll('-', '').replaceAll('_', '')} : []
 
+known_tools = [ "hisat", "xhla", "hlascan", "hlahd", "optitype" ]
+
+tools.each { t ->
+    if (!known_tools.contains(t)) {
+        log.info "Requested unknown tool ${t}! Allowed tools are: ${known_tools.join(',')}..."
+        System.exit(1)
+    }
+}
+
 ch_genes		= Channel.fromList(params.hla_genes)
 // HLAscan is unique in that it can type the HLA-DRB5 gene - we have to add this separately. 
 ch_hlascan_genes	= Channel.fromList(params.hla_genes_hlascan)
 
 ch_bed			= Channel.fromPath("$baseDir/assets/targets/genes.bed", checkIfExists: true)
 
-genome_index	= params.genomes[ "hg38" ].fasta
+genome_index            = params.genomes[ "hg38" ].fasta
 ch_fasta		= Channel.from( [ params.fasta, params.fai, params.dict] )
 
 ch_versions		= Channel.from([])
 ch_qc			= Channel.from([])
 ch_reports		= Channel.from([])
-multiqc_files	= Channel.from([])
+multiqc_files           = Channel.from([])
 
 // Workflow
 workflow HLA {
@@ -123,6 +132,7 @@ workflow HLA {
         )
 
         ch_reports     = ch_reports.mix(XHLA_TYPING.out.report)
+        ch_versions    = ch_versions.mix(XHLA_TYPING.out.versions)
 
     }
 
