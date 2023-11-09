@@ -58,7 +58,7 @@ end
 def trim_allele(call,precision)
 
     answer = nil
-    e = call.split(":")
+    call.include?('*') ? e = call.split("*")[-1].split(":") : e = call.split(":")
     if e.length > precision
         answer = e[0..precision-1].join(":")
     else 
@@ -215,13 +215,13 @@ if options.pdf
             #end
 
             # Sanitize gene name (HLA-A -> A)
-            gene = gene.split("-")[-1]
+            gene = gene.split("-")[-1].split("*")[0]
             
             genes << gene unless genes.include?(gene)
             results[gene] = alleles.sort
 
             # this should not happen and suggests an issue parsing the report. 
-            exit if gene.include?("*")
+            #abort "Illegal gene name #{gene}" if gene.include?("*")
             
         end
 
@@ -234,7 +234,7 @@ if options.pdf
 
 elsif options.csv
 
-    csv = CSV.read(options.csv, headers: true, col_sep: ';')
+    csv = CSV.read(options.csv, headers: true, col_sep: "\t")
 
     this_sample = nil
         
@@ -242,16 +242,17 @@ elsif options.csv
     
         sample = row["Sample name"]
         locus = row["Locus"]
+
         locus.include?("_") ? gene = locus.split("_")[1] : gene = locus
         genes << gene unless genes.include?(gene)
             
-        calls = row["Typing result"]
+        calls = row["Conclusive typing"]
         
         if calls.include?(",")
-	        alleles = calls.split(",").map {|c| trim_allele(c.strip.split("*")[-1],precision) }
-	else
-		alleles = [ "NoCall", "NoCall" ]
-	end
+            alleles = calls.split(",").map {|c| trim_allele(c.strip.split("*")[-1],precision) }
+        else
+            alleles = [ "NoCall", "NoCall" ]
+        end
         
         if this_sample && this_sample != sample
         
@@ -427,7 +428,7 @@ genes.sort.each do |gene|
                     # Sort and check if the shorter call fits into the larger call - else its a mismatch
                     if g && t
 
-                        if g.include?("P")
+                        if g.match(/.*P$/)
                             g.gsub!(/\d$/, "")
                             if groups.has_key?(gene) && groups[gene].has_key?(g)
                                 dictionary = groups[gene][g]
