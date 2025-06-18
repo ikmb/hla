@@ -38,7 +38,7 @@ process JSON2PDF {
     pdf = "${sample}.pdf"
     
     """
-        json2pdf.rb -j ${json} -o $pdf -l ${baseDir}/images/ikmb_bfx_logo.png
+        json2pdf.rb -j ${json} -o $pdf
     """
 }
 
