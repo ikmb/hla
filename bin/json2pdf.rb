@@ -52,7 +52,6 @@ opts = OptionParser.new()
 opts.banner = "A script description here"
 opts.separator ""
 opts.on("-j","--json", "=JSON","JSON input") {|argument| options.json = argument }
-opts.on("-l","--logo", "=LOGO","Logo to include") {|argument| options.logo = argument }
 opts.on("-o","--outfile", "=OUTFILE","Output file") {|argument| options.outfile = argument }
 opts.on("-h","--help","Display the usage information") {
     puts opts
@@ -130,8 +129,6 @@ pdf = Prawn::Document.new
 
 pdf.font("Helvetica")
 pdf.font_size 14
-
-pdf.image(options.logo, :at => [400,730], :width => 150 )
 
 pdf.move_down 5
 

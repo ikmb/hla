@@ -9,9 +9,9 @@ If you are at the IKMB, you will not have to do anything to make this run, it is
 This pipeline requires a site-specific configuration file to be able to talk to your local cluster or compute infrastructure. Nextflow supports a wide
 range of such infrastructures, including Slurm, LSF and SGE - but also Kubernetes and AWS. For more information, see [here](https://www.nextflow.io/docs/latest/executor.html).
 
-Please see conf/medcluster.config for an example of how to configure this pipeline for a Slurm queue.
+Please see conf/caucluster.config for an example of how to configure this pipeline for a Slurm queue.
 
-All software is provided through Docker containers - this requires for your compute system to run either Docker or Singularity (more common on HPC systems). Details on how to specify singularity as your container engine are provided in the config file for our medcluster (medcluster.config).
+All software is provided through Docker containers - this requires for your compute system to run either Docker or Singularity (more common on HPC systems). Details on how to specify singularity as your container engine are provided in the config file for our caucluster (caucluster.config).
 
 With this information in place, you will next have to create an new site-specific profile for your local environment in `nextflow.config` using the following format:
 

@@ -1,7 +1,6 @@
 process HLAHD {
 
     container false
-    module 'IKMB:HLAHD/1.7.0'
 
     label 'medium_parallel'
 
