@@ -7,7 +7,15 @@ RUN conda env create -f /environment.yml && conda clean -a
 ENV PATH /opt/conda/envs/hla-1.6/bin:/opt/hisat-genotype:/opt/hisat-genotype/hisat2:/opt/hlascan/:$PATH
 ENV PYTHONPATH /opt/hisat-genotype/hisatgenotype_modules:$PYTHONPATH
 
-RUN apt-get -y update && apt-get -y install make wget git gcc g++ openssl zlib1g-dev libyaml-dev xml2 libjson-c-dev libssl-dev
+# Fix Debian Buster archived repositories
+RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
+    sed -i 's|security.debian.org|archive.debian.org|g' /etc/apt/sources.list && \
+    sed -i 's/^deb /deb [trusted=yes] /' /etc/apt/sources.list
+
+RUN apt-get -y update && \
+    apt-get -y install --no-install-recommends \
+    make wget git gcc g++ openssl zlib1g-dev libyaml-dev xml2 libjson-c-dev libssl-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN cd /opt && git clone --recurse-submodules https://github.com/DaehwanKimLab/hisat-genotype \
     && cd hisat-genotype/hisat2 && make -j2
